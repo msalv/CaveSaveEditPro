@@ -1,64 +1,52 @@
 # What is MCI?
-The MCI system, or the **M**od **C**ompatibility **I**nformation system (originally just called the "defines" system) is the system this save editor uses for mod compatibility. It's exactly what it says on the tin.
+The MCI system, or the **M**od **C**ompatibility **I**nformation system (originally just called the "defines" system) is the system this save editor uses for mod compatibility.
+It allows to redefine game related values that may vary from one edition to another (i.e. map names in CS and CS+).
+
+# Current Status
+Deprecated. In the original CaveSaveEdit it was meant to be a scripting extension to the app,
+but now it serves only as a static configuration system.
 
 # How does MCI work?
-The MCI system uses JavaScript to define and declare values.
-An example for an MCI configuration file can be found [here](src/main/resources/com/leo/cse/frontend/default.mci).  
-Every MCI file should contain the following functions. *Note: CSE always uses double resolution images, take this in consideration when dealing with positions and sizes!*
+The MCI system uses JSON to define and declare values.
+An example for an MCI configuration file can be found [here](src/main/resources/default.json).
+Every MCI file should contain the following fields. 
+*Note: CaveSaveEdit Pro always uses double resolution images, take this in consideration when dealing with positions and sizes!*
+
 ## Metadata
-- `getName:String` - Gets the MCI file's name.
-- `getAuthor:String` - Gets the MCI file's author(s).
+- `name:String` - MCI file's title
+- `author:String` - MCI file's author(s)
 
 ## Game information
-- `getExeName:String` - Gets the mod executable's name.
-- `getArmsImageYStart:Number` - Gets the starting Y position for weapon icons in ArmsImage.
-- `getArmsImageSize:Number` - Gets the size of weapon icons in ArmsImage.
-- `getFPS:Number` - Gets the FPS. Used for calculating the "Seconds Played" field.
-- `getGraphicsResolution:Number` - Gets the game's resolution.
-- `getProfileClass:String` - Gets the profile class to use to load profiles. Valid classes are:
-`com.leo.cse.backend.profile.NormalProfile` - For vanilla CS profiles,
-`com.leo.cse.backend.profile.PlusProfile` - For Cave Story+ profiles.
-- `getSaveEvent:Number` - Gets the event used for saving the profile. Used for the "Search for Save Points" tool.
+- `exeName:String` - Game's executable name
+- `armsImageYStart:Number` - Starting Y position for weapon icons in ArmsImage
+- `armsImageSize:Number` - Size of weapon icons in ArmsImage
+- `fps:Number` - FPS. Used for calculating the "Seconds Played" field
+- `graphicsResolution:Number` - Game's graphics density
+- `profileClass:String` - Profile class name to use to load profiles. Valid values are:
+`com.leo.cse.backend.profile.model.NormalProfile` - For vanilla CS profiles,
+`com.leo.cse.backend.profile.model.PlusProfile` - For Cave Story+ profiles.
+- `saveEvent:Number` - The event used for saving the profile. Used for the Save Points dialog
 
 ## Information arrays
 To add an empty space to any of these arrays, add a `null`.
-- `getSpecials:Array<String>` - Gets a list of special support features to enable. Valid values are:  
+- `specials:Array<String>` - Deprecated. A list of special support features to enable. Valid values are:  
 `MimHack` for the <MIM hack,  
 `VarHack` for the <VAR hack (cannot be enabled with <MIM or <BUY),  
 `PhysVarHack` for the <PHY hack (depends on <VAR),  
-`BuyHack` for the <BUY hack,  
-`EquipPlusHack` for Enlight's Equip+ hack. **CURRENTLY NOT FUNCTIONAL!**  
+`BuyHack` for the <BUY hack.
 If no special support is required, `null` can also be returned.
-- `getMapNames:Array<String>` - Gets a list of map names. Only used when an executable isn't loaded.
-- `getSongNames:Array<String>` - Gets a list of song names.
-- `getEquipNames:Array<String>` - Gets a list of equip names.
-- `getWeaponNames:Array<String>` - Gets a list of weapon names.
-- `getItemNames:Array<String>` - Gets a list of item names.
-- `getWarpNames:Array<String>` - Gets a list of warp names.
-- `getWarpLocNames:Array<String>` - Gets a list of warp location names.
-- `getSaveFlagID:Number` - Gets the ID of the "game was saved" flag. This flag ID will not be modifiable.
-- `getFlagDescriptions:Array<String>` - Gets a list of flag descriptions.
-
-## Player extras
-- `getPlayerFrame:java.awt.Rectangle` - Gets the player's frame rectangle. `x` and `y` are the top-left corner's position, and `width` and `height` are the bottom-right corner's position.
-- `getPlayerOffset:java.awt.Point` - Gets the player's offset in pixels.
-
-Both of these functions get the following parameters:  
-- `x:Number` - The X position of the player in pixels.
-- `y:Number` - The Y position of the player in pixels.
-- `leftright:Boolean` - `false` if the player is facing left, `true` if the player is facing right.
-- `costume:Number` - The costume ID the player is currently using. If no costume hacks (<MIM or TSC+) are applied: 0 if the Mimiga Mask is not equipped, 1 if the Mimiga Mask is equipped.
+*Note: these special features are deprecated. They may not work properly*
+- `mapNames:Array<String>` - A list of map names. Used when an executable isn't loaded
+- `songNames:Array<String>` - A list of song names
+- `equipNames:Array<String>` - A list of equip names
+- `weaponNames:Array<String>` - A list of weapon names
+- `itemNames:Array<String>` - A list of item names
+- `warpNames:Array<String>` - A list of warp names
+- `warpLocNames:Array<String>` - A list of warp location names
+- `flagDescriptions:Array<String>` - A list of flag descriptions
+- `challengeNames:Array<String>` - A list of Cave Story+ challenge names
+- `saveFlagID:Number` - The ID of the "game was saved" flag. This flag ID will not be modifiable
 
 ## Entity extras
-Both of the following functions receive one parameter: a `WrappedPxeEntry` object.
-Every `WrappedPxeEntry` object has the following fields (they're public, so just doing `object.field` is okay):
-- `x:Number` - The X position of the entity in tiles.
-- `y:Number` - The Y position of the entity in tiles.
-- `flagID:Number` - The entity's assigned flag ID.
-- `eventNum:Number` - The entity's assigned event number.
-- `type:Number` - The entity's type (NPC ID).
-- `flags:Array<Boolean>` - The entity's flags.
-
-Here are the functions themselves:
-- `getEntityFrame:java.awt.Rectangle` - Gets the entity's frame rectangle. `x` and `y` are the top-left corner's position, and `width` and `height` are the bottom-right corner's position.
-- `getEntityOffset:java.awt.Point` - Gets the entity's position offset in pixels.
+- `entityFrames:Object` - Key-value data structure that maps entity type to it's frame rectangle. `x` and `y` are the top-left corner's position, and `width` and `height` are the bottom-right corner's position.
+- `entityOffsets:Object` - Key-value data structure that maps entity type to it's position offset in pixels

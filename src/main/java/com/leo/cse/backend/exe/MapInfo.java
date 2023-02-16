@@ -2,298 +2,108 @@ package com.leo.cse.backend.exe;
 
 import java.awt.Rectangle;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 
-import com.leo.cse.backend.BackendLogger;
-import com.leo.cse.backend.ResUtils;
-import com.leo.cse.backend.tsc.TSCFile;
+import com.leo.cse.log.AppLogger;
+import com.leo.cse.backend.res.GameResources;
 
-// credit to Noxid for making Booster's Lab open source so I could steal code
-// from it
 /**
  * Stores information for loaded maps.
- *
- * @author Leo
- *
  */
 public class MapInfo {
+	public static final int LAYER_BG = 0;
+	public static final int LAYER_FG = 1;
 
 	/**
-	 * Abstract map data.
-	 */
-	private Mapdata d;
-	/**
-	 * Width of the map, in tiles.
-	 */
-	private int mapX;
-	/**
-	 * Height of the map, in tiles.
-	 */
-	private int mapY;
-	/**
-	 * The map's ID.
-	 */
-	private int mapNumber;
-	/**
-	 * The map tiles. <br \> The first index is the layer: 0 for background, 1 for
-	 * foreground. <br \> The second and third indexes are X and Y positions,
+	 * The map tiles.
+	 *
+	 * The first index is the layer: 0 for background, 1 for
+	 * foreground.
+	 *
+	 * The second and third indexes are X and Y positions,
 	 * respectively.
 	 */
-	protected int[][][] map;
+	private final int[][][] map;
+
 	/**
 	 * The map's tileset file.
-	 *
-	 * @see ExeData#getImage(File)
 	 */
-	private File tileset;
+	private final File tileset;
+
 	/**
 	 * The map's background image file.
-	 *
-	 * @see ExeData#getImage(File)
 	 */
-	private File bgImage;
+	private final File bgImage;
+
 	/**
 	 * The map's file name.
 	 */
-	private String fileName;
+	private final String fileName;
+
 	/**
 	 * The map's scroll type.
 	 */
-	private int scrollType;
+	private final int scrollType;
+
 	/**
 	 * The map's 1st NPC sheet file.
-	 *
-	 * @see ExeData#getImage(File)
 	 */
-	private File npcSheet1;
+	private final File npcSheet1;
+
 	/**
 	 * The map's 2nd NPC sheet file.
-	 *
-	 * @see ExeData#getImage(File)
 	 */
-	private File npcSheet2;
+	private final File npcSheet2;
+
 	/**
 	 * The map's name.
 	 */
-	private String mapName;
+	private final String mapName;
+
 	/**
 	 * The map's PXA file.
-	 *
-	 * @see ExeData#getPxa(File)
 	 */
-	private File pxaFile;
+	private final File pxaFile;
+
 	/**
 	 * List of the map's entities.
 	 *
 	 * @see PxeEntry
 	 */
-	private LinkedList<PxeEntry> pxeList;
-	/**
-	 * Map's TSC script.
-	 * 
-	 * @see TSCFile
-	 */
-	private TSCFile tscFile;
+	private final List<PxeEntry> pxeList;
 
-	/**
-	 * Loads a map and it's resources.
-	 *
-	 * @param d
-	 *            source map data
-	 */
-	public MapInfo(Mapdata d) {
-		this.d = d;
-		fileName = d.getFileName();
-		scrollType = d.getScrollType();
-		mapName = d.getMapName();
-		File directory = ExeData.getDataDir();
-		setupFiles(directory);
-		String stage = ExeData.getExeString(ExeData.STRING_STAGE_FOLDER);
-		String pxa = ExeData.getExeString(ExeData.STRING_PXA_EXT);
-		pxaFile = new File(String.format(pxa, directory + "/" + stage, d.getTileset()));
-	}
-
-	/**
-	 * Loads the PXA file for this map.
-	 */
-	public void loadPXA() {
-		ExeData.addPxa(pxaFile);
-	}
-
-	/**
-	 * Locates image resources for this map.
-	 *
-	 * @param d
-	 *            source map data
-	 * @param directory
-	 *            data directory
-	 */
-	private void setupFiles(File directory) {
-		// locate each image resource
-		String stage = ExeData.getExeString(ExeData.STRING_STAGE_FOLDER);
-		String npc = ExeData.getExeString(ExeData.STRING_NPC_FOLDER);
-		String prt = ExeData.getExeString(ExeData.STRING_PRT_PREFIX);
-		String npcP = ExeData.getExeString(ExeData.STRING_NPC_PREFIX);
-		tileset = ExeData
-				.correctFile(ResUtils.getGraphicsFile(directory.toString(), String.format(prt, stage, d.getTileset())));
-		bgImage = ExeData.correctFile(ResUtils.getGraphicsFile(directory.toString(), d.getBgName()));
-		if (!ExeData.doLoadNpc())
-			return;
-		npcSheet1 = ExeData.correctFile(
-				ResUtils.getGraphicsFile(directory.toString(), String.format(npcP, npc, d.getNpcSheet1())));
-		npcSheet2 = ExeData.correctFile(
-				ResUtils.getGraphicsFile(directory.toString(), String.format(npcP, npc, d.getNpcSheet2())));
-	}
-
-	/**
-	 * Loads image resources for this map.
-	 */
-	public void loadImages() {
-		ExeData.addImage(tileset);
-		ExeData.addImage(bgImage);
-		if (!ExeData.doLoadNpc())
-			return;
-		ExeData.addImage(npcSheet1);
-		ExeData.addImage(npcSheet2);
-	}
-
-	/**
-	 * Loads this map's layout file.
-	 */
-	public void loadMap() {
-		// load the map data
-		ByteBuffer mapBuf;
-		File directory = ExeData.getDataDir();
-		String currentFileName = String.format(ExeData.getExeString(ExeData.STRING_PXM_EXT),
-				directory + "/" + ExeData.getExeString(ExeData.STRING_STAGE_FOLDER), d.getFileName());
-		try {
-			File currentFile = ResUtils.newFile(currentFileName);
-
-			if (!currentFile.exists())
-				throw new IOException("File \"" + currentFile + "\" does not exist!");
-
-			FileInputStream inStream = new FileInputStream(currentFile);
-			FileChannel inChan = inStream.getChannel();
-			ByteBuffer hBuf = ByteBuffer.allocate(8);
-			hBuf.order(ByteOrder.LITTLE_ENDIAN);
-			inChan.read(hBuf);
-			// read the filetag
-			hBuf.flip();
-			byte tagArray[] = new byte[3];
-			hBuf.get(tagArray, 0, 3);
-			if (!(new String(tagArray).equals(ExeData.getExeString(ExeData.STRING_PXM_TAG)))) {
-				inChan.close();
-				inStream.close();
-				throw new IOException("Bad file tag");
-			}
-			hBuf.get();
-			mapX = hBuf.getShort();
-			mapY = hBuf.getShort();
-			mapBuf = ByteBuffer.allocate(mapY * mapX);
-			mapBuf.order(ByteOrder.LITTLE_ENDIAN);
-			inChan.read(mapBuf);
-			inChan.close();
-			inStream.close();
-			mapBuf.flip();
-		} catch (IOException e) {
-			BackendLogger.error("Failed to load PXM:\n" + currentFileName, e);
-			mapX = 21;
-			mapY = 16;
-			mapBuf = ByteBuffer.allocate(mapY * mapX);
-		}
-		map = new int[2][mapY][mapX];
-		for (int y = 0; y < mapY; y++)
-			for (int x = 0; x < mapX; x++) {
-				int tile = 0xFF & mapBuf.get();
-				if (calcPxa(tile) > 0x20)
-					map[1][y][x] = tile;
-				else
-					map[0][y][x] = tile;
-			}
+	public MapInfo(int[][][] map, File tileset, File bgImage, String fileName, int scrollType, File npcSheet1, File npcSheet2, String mapName, File pxaFile, List<PxeEntry> pxeList) {
+		this.map = map;
+		this.tileset = tileset;
+		this.bgImage = bgImage;
+		this.fileName = fileName;
+		this.scrollType = scrollType;
+		this.npcSheet1 = npcSheet1;
+		this.npcSheet2 = npcSheet2;
+		this.mapName = mapName;
+		this.pxaFile = pxaFile;
+		this.pxeList = pxeList;
 	}
 
 	/**
 	 * Calculates a tile's type.
 	 *
-	 * @param tileNum
-	 *            tile ID
+	 * @param tileNum tile ID
+	 * @param resources game resources
 	 * @return tile type
 	 */
-	public int calcPxa(int tileNum) {
-		byte[] pxaData = ExeData.getPxa(pxaFile);
-		int rval = 0;
+	public int calcPxa(int tileNum, GameResources resources) {
+		final byte[] pxaData = resources.getPxa(pxaFile);
+		if (pxaData == null) {
+			return 0;
+		}
 		try {
-			rval = pxaData[tileNum];
+			return pxaData[tileNum] & 0xFF;
 		} catch (Exception e) {
-			BackendLogger.error("Could not get tile " + tileNum + " in PXA (length is " + pxaData.length + ")", e);
+			AppLogger.error(String.format("Could not get tile %d in PXA (length is %d)", tileNum, pxaData.length), e);
 		}
-		return rval & 0xFF;
-	}
-
-	/**
-	 * Loads this map's entities.
-	 */
-	public void loadEntities() {
-		pxeList = new LinkedList<>();
-		File directory = ExeData.getDataDir();
-		String currentFileName = String.format(ExeData.getExeString(ExeData.STRING_PXE_EXT),
-				directory + "/" + ExeData.getExeString(ExeData.STRING_STAGE_FOLDER), d.getFileName());
-		try {
-			File currentFile = ResUtils.newFile(currentFileName);
-			if (!currentFile.exists())
-				throw new IOException("File \"" + currentFile + "\" does not exist!");
-
-			FileInputStream inStream = new FileInputStream(currentFile);
-			FileChannel inChan = inStream.getChannel();
-			ByteBuffer hBuf = ByteBuffer.allocate(6);
-			hBuf.order(ByteOrder.LITTLE_ENDIAN);
-
-			inChan.read(hBuf);
-			hBuf.flip();
-			int nEnt;
-			ByteBuffer eBuf;
-			nEnt = hBuf.getShort(4);
-			eBuf = ByteBuffer.allocate(nEnt * 12 + 2);
-			eBuf.order(ByteOrder.LITTLE_ENDIAN);
-			inChan.read(eBuf);
-			eBuf.flip();
-			eBuf.getShort(); // discard this value
-			for (int i = 0; i < nEnt; i++) {
-				int pxeX = eBuf.getShort();
-				int pxeY = eBuf.getShort();
-				int pxeFlagID = eBuf.getShort();
-				int pxeEvent = eBuf.getShort();
-				int pxeType = eBuf.getShort();
-				int pxeFlags = eBuf.getShort() & 0xFFFF;
-				PxeEntry p = new PxeEntry(pxeX, pxeY, pxeFlagID, pxeEvent, pxeType, pxeFlags);
-				pxeList.add(p);
-			}
-			inChan.close();
-			inStream.close();
-		} catch (IOException e) {
-			BackendLogger.error("Failed to load PXE:\n" + currentFileName, e);
-			pxeList = null;
-		}
-	}
-
-	/**
-	 * Loads this map's TSC file.
-	 */
-	public void loadTSC() {
-		File directory = ExeData.getDataDir();
-		String currentFileName = String.format(ExeData.getExeString(ExeData.STRING_TSC_EXT),
-				directory + "/" + ExeData.getExeString(ExeData.STRING_STAGE_FOLDER), fileName);
-		try {
-			tscFile = new TSCFile(currentFileName);
-		} catch (IOException e) {
-			BackendLogger.error("Failed to load TSC:\n" + currentFileName, e);
-		}
+		return 0;
 	}
 
 	/**
@@ -302,11 +112,11 @@ public class MapInfo {
 	 * @author Leo
 	 *
 	 */
-	public class PxeEntry {
+	public static class PxeEntry {
 		/**
 		 * The entity's X position, in tiles.
 		 */
-		private short xTile;
+		private final short xTile;
 
 		public short getX() {
 			return xTile;
@@ -315,7 +125,7 @@ public class MapInfo {
 		/**
 		 * The entity's Y position, in tiles.
 		 */
-		private short yTile;
+		private final short yTile;
 
 		public short getY() {
 			return yTile;
@@ -324,7 +134,7 @@ public class MapInfo {
 		/**
 		 * The entity's flag ID.
 		 */
-		private short flagID;
+		private final short flagID;
 
 		public short getFlagID() {
 			return flagID;
@@ -333,7 +143,7 @@ public class MapInfo {
 		/**
 		 * The entity's event number.
 		 */
-		private short eventNum;
+		private final short eventNum;
 
 		public short getEvent() {
 			return eventNum;
@@ -342,7 +152,7 @@ public class MapInfo {
 		/**
 		 * The entity's type.
 		 */
-		private short entityType;
+		private final short entityType;
 
 		public short getType() {
 			return entityType;
@@ -351,7 +161,7 @@ public class MapInfo {
 		/**
 		 * The entity's flags.
 		 */
-		private short flags;
+		private final short flags;
 
 		public short getFlags() {
 			return flags;
@@ -360,39 +170,24 @@ public class MapInfo {
 		/**
 		 * The entity's npc.tbl entry.
 		 */
-		private EntityData inf;
+		private final EntityData inf;
 
 		public EntityData getInfo() {
 			return inf;
 		}
 
-		/**
-		 * Creates a new entity.
-		 *
-		 * @param pxeX
-		 *            x position
-		 * @param pxeY
-		 *            y position
-		 * @param pxeFlagID
-		 *            flag ID
-		 * @param pxeEvent
-		 *            event number
-		 * @param pxeType
-		 *            entity type
-		 * @param pxeFlags
-		 *            entity flags
-		 */
-		PxeEntry(int pxeX, int pxeY, int pxeFlagID, int pxeEvent, int pxeType, int pxeFlags) {
-			xTile = (short) pxeX;
-			yTile = (short) pxeY;
-			flagID = (short) pxeFlagID;
-			eventNum = (short) pxeEvent;
-			entityType = (short) pxeType;
-			flags = (short) pxeFlags;
+		public PxeEntry(short pxeX, short pxeY, short pxeFlagID, short pxeEvent, short pxeType, short pxeFlags, EntityData pxeInf) {
+			if (pxeInf == null) {
+				throw new IllegalArgumentException(String.format("Entity type %s is undefined!", pxeType));
+			}
 
-			inf = ExeData.getEntityInfo(entityType);
-			if (inf == null)
-				throw new NullPointerException("Entity type " + entityType + " is undefined!");
+			xTile = pxeX;
+			yTile = pxeY;
+			flagID = pxeFlagID;
+			eventNum = pxeEvent;
+			entityType = pxeType;
+			flags = pxeFlags;
+			inf = pxeInf;
 		}
 
 		/**
@@ -400,58 +195,18 @@ public class MapInfo {
 		 *
 		 * @return draw area
 		 */
-		public Rectangle getDrawArea() {
-			// Rectangle frameRect = inf.getFramerect();
-			Rectangle offset;
-			if (inf != null) {
-				offset = inf.getDisplay();
-			} else {
-				offset = new Rectangle(16, 16, 16, 16);
-			}
-			// int width = frameRect.width - frameRect.x, height = frameRect.height -
-			// frameRect.y;
-			int offL = offset.x;
-			int offU = offset.y;
-			int offR = offset.width;
-			int offD = offset.height;
-			int destW = offR + offL;
-			destW *= 2;
-			// destW = Math.max(destW, width);
-			int destH = offD + offU;
-			destH *= 2;
-			// destH = Math.max(destH, height);
-			int destX = xTile * 32 - offL * 2;
-			int destY = yTile * 32 - offU * 2;
-			Rectangle area = new Rectangle(destX, destY, destW, destH);
-			return area;
+		public Rectangle getDrawArea(Rectangle rect) {
+			final Rectangle offset = inf.getDisplay(rect);
+
+			final int destW = (offset.width + offset.x) * 2;
+			final int destH = (offset.height + offset.y) * 2;
+			final int destX = xTile * 32 - offset.x * 2;
+			final int destY = yTile * 32 - offset.y * 2;
+
+			rect.setBounds(destX, destY, destW, destH);
+
+			return rect;
 		}
-	}
-
-	/**
-	 * Gets the map's width.
-	 *
-	 * @return width
-	 */
-	public int getMapX() {
-		return mapX;
-	}
-
-	/**
-	 * Gets the map's height.
-	 *
-	 * @return height
-	 */
-	public int getMapY() {
-		return mapY;
-	}
-
-	/**
-	 * Get the map's ID.
-	 *
-	 * @return map ID
-	 */
-	public int getMapNumber() {
-		return mapNumber;
 	}
 
 	/**
@@ -461,7 +216,7 @@ public class MapInfo {
 	 * @see #map
 	 */
 	public int[][][] getMap() {
-		return map.clone();
+		return map;
 	}
 
 	/**
@@ -469,7 +224,7 @@ public class MapInfo {
 	 *
 	 * @return tileset
 	 */
-	public File getTileset() {
+	public File getTilesetFile() {
 		return tileset;
 	}
 
@@ -478,7 +233,7 @@ public class MapInfo {
 	 *
 	 * @return background image
 	 */
-	public File getBgImage() {
+	public File getBgImageFile() {
 		return bgImage;
 	}
 
@@ -528,34 +283,16 @@ public class MapInfo {
 	}
 
 	/**
-	 * Gets the map's PXA file.
-	 *
-	 * @return PXA file
-	 */
-	public File getPxaFile() {
-		return pxaFile;
-	}
-
-	/**
 	 * Gets an iterator over the map's entities.
 	 *
 	 * @return iterator over elements of entity list
 	 * @see #pxeList
 	 */
 	public Iterator<PxeEntry> getPxeIterator() {
-		if (pxeList == null)
+		if (pxeList == null) {
 			return null;
+		}
 		return pxeList.iterator();
-	}
-
-	/**
-	 * Gets the map's TSC file.
-	 *
-	 * @return TSC file
-	 * @see com.leo.cse.backend.tsc.TSCFile
-	 */
-	public TSCFile getTSC() {
-		return tscFile;
 	}
 
 	/**
@@ -564,10 +301,16 @@ public class MapInfo {
 	 * @return <code>true</code> if there are missing assets, <code>false</code>
 	 *         otherwise.
 	 */
-	public boolean hasMissingAssets() {
-		return map == null || ExeData.getImage(tileset) == null || ExeData.getImage(bgImage) == null || ExeData
-				.doLoadNpc()
-				&& (ExeData.getImage(npcSheet1) == null || ExeData.getImage(npcSheet2) == null || pxeList == null);
+	public static boolean hasMissingAssets(MapInfo mapInfo, GameResources resources, boolean shouldLoadNpc) {
+		if (mapInfo.map == null) return true;
+		if (resources.getImage(mapInfo.tileset) == null) return true;
+		if (resources.getImage(mapInfo.bgImage) == null) return true;
+		if (shouldLoadNpc) {
+			if (resources.getImage(mapInfo.npcSheet1) == null) return true;
+			if (resources.getImage(mapInfo.npcSheet2) == null) return true;
+			return mapInfo.pxeList == null;
+		}
+		return false;
 	}
 
 	/**
@@ -576,32 +319,45 @@ public class MapInfo {
 	 * @return list of missing assets, or an empty string if there are no missing
 	 *         assets
 	 */
-	public String getMissingAssets() {
-		if (!hasMissingAssets())
+	public static String getMissingAssets(MapInfo mapInfo, GameResources resources, boolean shouldLoadNpc) {
+		if (!hasMissingAssets(mapInfo, resources, shouldLoadNpc)) {
 			return "";
+		}
+
 		final String[] assetName = new String[] {
 				"PXM file",
 				"tileset",
 				"background image",
 				"NPC sheet 1",
 				"NPC sheet 2",
-				"PXE file" };
-		final boolean[] assetStat = new boolean[] {
-				map == null,
-				ExeData.getImage(tileset) == null,
-				ExeData.getImage(bgImage) == null,
-				ExeData.doLoadNpc() && ExeData.getImage(npcSheet1) == null,
-				ExeData.doLoadNpc() && ExeData.getImage(npcSheet2) == null,
-				ExeData.doLoadNpc() && pxeList == null };
-		assert (assetName.length == assetStat.length);
-		String ret = "";
-		for (int i = 0; i < assetStat.length; i++)
-			if (assetStat[i])
-				ret += assetName[i] + ", ";
-		if ("".equals(ret))
-			return ret;
-		ret = ret.substring(0, 1).toUpperCase() + ret.substring(1, ret.length());
-		return ret.substring(0, ret.length() - 2);
-	}
+				"PXE file"
+		};
 
+		final boolean[] assetStat = new boolean[] {
+				mapInfo.map == null,
+				resources.getImage(mapInfo.tileset) == null,
+				resources.getImage(mapInfo.bgImage) == null,
+				shouldLoadNpc && resources.getImage(mapInfo.npcSheet1) == null,
+				shouldLoadNpc && resources.getImage(mapInfo.npcSheet2) == null,
+				shouldLoadNpc && mapInfo.pxeList == null
+		};
+
+		final StringBuilder stringBuilder = new StringBuilder();
+
+		for (int i = 0; i < assetStat.length; i++) {
+			if (assetStat[i]) {
+				if (stringBuilder.length() != 0) {
+					stringBuilder.append(", ");
+				}
+				stringBuilder.append(assetName[i]);
+			}
+		}
+
+		if (stringBuilder.length() == 0) {
+			return "";
+		}
+
+		stringBuilder.setCharAt(0, Character.toUpperCase(stringBuilder.charAt(0)));
+		return stringBuilder.toString();
+	}
 }

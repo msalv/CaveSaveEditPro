@@ -1,18 +1,5 @@
-4.0.3
-HOTFIX 4.0.3:
-- Fix "New Profile" not working correctly
-- New profiles now start at the game/mod's start point, with the starting health!
-- Added "Show Player Above FG" option, toggles player overlay on top of foreground tiles
-- Dragging map view while Shift is held now automatically snaps position to grid
-- Fix "Run Game" option on CS+ only working with Steam installation on Windows, now works with all Steam installations and DRM-free installations!
-HOTFIX 4.0.2:
-- Fix weapon & warp fields being completely off
-- Fix 290.rec editor outputting "corrupt" records
-HOTFIX 4.0.1:
-- Fix app hanging when loading mod without profile
-- Fix flag editor setting the wrong flag when undefined/system flags are shown
-Update 4.0 - The Awaited Update:
-- The map preview will now display entities from the PIXEL bitmap! Thanks to 20kdc for basically writing this feature
-- Added a "Search for Save Point" tool which allows you to jump to any save point
-- Added images to weapon, item & warp select
-- Removed shadow from main window. This should cause less problems with moving the window
+5.0.0
+RELEASE 5.0.0:
+- Complete rewrite and refactoring
+- CaveStory+ tab
+- Bug fixes and new features

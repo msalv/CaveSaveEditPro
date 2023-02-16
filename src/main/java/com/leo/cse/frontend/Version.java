@@ -1,47 +1,48 @@
 package com.leo.cse.frontend;
 
+import java.util.regex.Pattern;
+
 public class Version implements Comparable<Version> {
+	private final String version;
 
-	private String version;
-
-	public final String get() {
-		return version;
-	}
+	private final int major;
+	private final int minor;
+	private final int patch;
 
 	public Version(String version) {
-		if (version == null)
-			throw new IllegalArgumentException("Version can not be null");
-		if (!version.matches("[0-9]+(\\.[0-9]+)*"))
-			throw new IllegalArgumentException("Invalid version format");
+		final String[] versions = version.split(Pattern.quote("."));
+		major = parseVersionAt(versions, 0);
+		minor = parseVersionAt(versions, 1);
+		patch = parseVersionAt(versions, 2);
+
 		this.version = version;
+	}
+
+	private int parseVersionAt(String[] versions, int index) {
+		return versions.length > index ? Integer.parseInt(versions[index]) : 0;
 	}
 
 	@Override
 	public int compareTo(Version that) {
-		if (that == null)
-			return 1;
-		String[] thisParts = get().split("\\.");
-		String[] thatParts = that.get().split("\\.");
-		int length = Math.max(thisParts.length, thatParts.length);
-		for (int i = 0; i < length; i++) {
-			int thisPart = i < thisParts.length ? Integer.parseInt(thisParts[i]) : 0;
-			int thatPart = i < thatParts.length ? Integer.parseInt(thatParts[i]) : 0;
-			if (thisPart < thatPart)
-				return -1;
-			if (thisPart > thatPart)
-				return 1;
+		int result = Integer.compare(major, that.major);
+		if (result != 0) {
+			return result;
 		}
-		return 0;
+
+		result = Integer.compare(minor, that.minor);
+
+		if (result != 0) {
+			return result;
+		}
+
+		return Integer.compare(patch, that.patch);
 	}
 
 	@Override
 	public boolean equals(Object that) {
-		if (this == that)
-			return true;
-		if (that == null)
-			return false;
-		if (this.getClass() != that.getClass())
-			return false;
+		if (that == null) return false;
+		if (this == that) return true;
+		if (this.getClass() != that.getClass()) return false;
 		return compareTo((Version) that) == 0;
 	}
 
@@ -49,5 +50,4 @@ public class Version implements Comparable<Version> {
 	public String toString() {
 		return version;
 	}
-
 }

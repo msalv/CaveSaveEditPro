@@ -1,136 +1,148 @@
 package com.leo.cse.frontend;
 
-import static com.leo.cse.frontend.FrontUtils.*;
+import static javax.swing.SwingConstants.EAST;
+import static javax.swing.SwingConstants.NORTH;
+import static javax.swing.SwingConstants.SOUTH;
+import static javax.swing.SwingConstants.WEST;
+
+import com.leo.cse.frontend.ui.ThemeData;
+import com.leo.cse.util.ArrayUtils;
+import com.leo.cse.util.TintHelper;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontFormatException;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
 
 public class Resources {
+	private static final String[] APP_ICON_SIZES = new String[] { "32", "64" };
 
 	private Resources() {
 	}
 
-	public static Font fontB, font, fontS, fontL;
-
-	private static final Map<BufferedImage, ImageIcon> iconCache = new HashMap<>();
-
-	public static ImageIcon createIconFromImage(BufferedImage image) {
-		if (image == null)
-			return null;
-		if (iconCache.containsKey(image))
-			return iconCache.get(image);
-		ImageIcon icon = new ImageIcon(image);
-		iconCache.put(image, icon);
-		return icon;
-	}
+	private static Font font;
+	private static Font fontPixel;
+	private static Font fontPixelLarge;
 
 	// base images
-	public static List<BufferedImage> appIcons;
-	public static final int APPICON_32 = 0, APPICON_64 = 1;
-	private static final String[] APPICON_SIZE = new String[] { "32", "64" };
-	public static BufferedImage shadow;
-	public static BufferedImage ui;
+	private final static List<BufferedImage> appIcons = new ArrayList<>();
 
 	// colored images
-	public static BufferedImage checkboxOff, checkboxOn, checkboxDisabled;
-	public static BufferedImage radioOff, radioOn, radioDisabled;
-	public static BufferedImage radioOffS, radioOnS, radioDisabledS;
-	public static BufferedImage dialogClose;
-	public static BufferedImage arrowDown, arrowUp;
-	public static BufferedImage grid;
+	private static BufferedImage arrowDown;
+	private static BufferedImage arrowUp;
+	private static BufferedImage arrowLeft;
+	private static BufferedImage arrowRight;
 
 	// uncolored images
-	public static BufferedImage drag;
-	public static BufferedImage[] editorTabIcons, icons;
+	private final static BufferedImage[] tabIcons = new BufferedImage[8];
+	private final static BufferedImage[] icons = new BufferedImage[8];
 
-	// niku counter
-	public static BufferedImage[] nikuNumbers;
-	public static BufferedImage nikuIcon, nikuPunc;
-
-	public static void loadWindow() throws IOException {
-		appIcons = new LinkedList<>();
-		for (int i = 0; i < APPICON_SIZE.length; i++)
-			appIcons.add(ImageIO.read(Resources.class.getResource("/appicon" + APPICON_SIZE[i] + ".png")));
-		shadow = ImageIO.read(Resources.class.getResource("/shadow.png"));
+	public static void loadIcons() throws IOException {
+		appIcons.clear();
+		for (String s : APP_ICON_SIZES) {
+			final InputStream is = Resources.class.getResourceAsStream(String.format("/appicon%s.png", s));
+			appIcons.add(ImageIO.read(Objects.requireNonNull(is)));
+		}
 	}
 
-	public static void loadUI() throws IOException, FontFormatException {
-		loadFonts();
-		ui = ImageIO.read(Resources.class.getResourceAsStream("/ui.png"));
-		loadImages();
+	public static void loadFonts() {
+		try (InputStream is = Resources.class.getResourceAsStream("/arcadepi.ttf")) {
+			final Font f = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(is));
+			fontPixel = f.deriveFont(Font.PLAIN, 10.0f);
+			fontPixelLarge = f.deriveFont(Font.PLAIN, 50.0f);
+		} catch (Exception e) {
+			fontPixel = ThemeData.getFallbackFont();
+			fontPixelLarge = fontPixel.deriveFont(Font.PLAIN, 48f);
+		}
+
+		try (InputStream is = Resources.class.getResourceAsStream("/ndsbios.ttf")) {
+			final Font f = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(is));
+			font = f.deriveFont(Font.PLAIN, 16f);
+		} catch (Exception e) {
+			font = ThemeData.getFallbackFont();
+		}
 	}
 
-	private static void loadFonts() throws FontFormatException, IOException {
-		fontB = new Font(Font.DIALOG, Font.PLAIN, 1);
-		font = fontB.deriveFont(Font.PLAIN, 11.0f);
-		fontS = fontB.deriveFont(Font.PLAIN, 9.0f);
-		fontL = fontB.deriveFont(Font.BOLD, 48.0f);
-	}
+	public static void loadUI(Color tint) throws IOException {
+		final InputStream is = Resources.class.getResourceAsStream("/ui.png");
+		final BufferedImage ui = ImageIO.read(Objects.requireNonNull(is));
 
-	private static void loadImages() {
-		reloadColorImages();
-		drag = ui.getSubimage(40, 8, 3, 8);
-		editorTabIcons = new BufferedImage[8];
-		for (int i = 0; i < editorTabIcons.length; i++)
-			editorTabIcons[i] = ui.getSubimage(i * 16, 16, 16, 16);
-		icons = new BufferedImage[16];
-		int tbx = 0, tby = 16;
+		final BufferedImage down = ui.getSubimage(80, 0, 8, 8);
+		arrowDown = TintHelper.tint(down, tint, 1f);
+
+		final BufferedImage up = ui.getSubimage(80, 8, 8, 8);
+		arrowUp = TintHelper.tint(up, tint, 1f);
+
+		final BufferedImage left = ui.getSubimage(88, 0, 8, 8);
+		arrowLeft = TintHelper.tint(left, tint, 1f);
+
+		final BufferedImage right = ui.getSubimage(88, 8, 8, 8);
+		arrowRight = TintHelper.tint(right, tint, 1f);
+
+		for (int i = 0; i < tabIcons.length; i++) {
+			tabIcons[i] = ui.getSubimage(i * 16, 16, 16, 16);
+		}
+
+		int tbx = 0;
+		int tby = 16;
+
 		for (int i = 0; i < icons.length; i++) {
 			if (i % 10 == 0) {
-				tbx = 0;
 				tby += 16;
 			}
 			icons[i] = ui.getSubimage(tbx, tby, 16, 16);
 			tbx += 16;
 		}
-		nikuNumbers = new BufferedImage[10];
-		for (int i = 0; i < nikuNumbers.length; i++)
-			nikuNumbers[i] = ui.getSubimage(i * 16, 64, 16, 16);
-		nikuIcon = ui.getSubimage(0, 80, 14, 14);
-		nikuPunc = ui.getSubimage(14, 80, 62, 14);
 	}
 
-	private static void reloadColorImages() {
-		checkboxOff = ui.getSubimage(0, 0, 16, 16);
-		checkboxOn = ui.getSubimage(16, 0, 16, 16);
-		checkboxDisabled = ui.getSubimage(64, 0, 16, 16);
-		radioOff = ui.getSubimage(112, 0, 16, 16);
-		radioOffS = ui.getSubimage(32, 0, 8, 8);
-		radioOn = ui.getSubimage(128, 0, 16, 16);
-		radioOnS = ui.getSubimage(40, 0, 8, 8);
-		radioDisabled = ui.getSubimage(144, 0, 16, 16);
-		radioDisabledS = ui.getSubimage(32, 8, 8, 8);
-		dialogClose = ui.getSubimage(48, 0, 15, 15);
-		arrowDown = ui.getSubimage(80, 0, 8, 8);
-		arrowUp = ui.getSubimage(80, 8, 8, 8);
-		grid = ui.getSubimage(43, 8, 2, 2);
+	public static Image getTabIcon(int iconId) {
+		return ArrayUtils.getOrDefault(tabIcons, iconId, null);
 	}
 
-	public static void colorImages(Color tint) {
-		reloadColorImages();
-		checkboxOff = generateMask(checkboxOff, tint, 1f);
-		checkboxOn = generateMask(checkboxOn, tint, 1f);
-		checkboxDisabled = generateMask(checkboxDisabled, tint, 1f);
-		radioOff = generateMask(radioOff, tint, 1f);
-		radioOffS = generateMask(radioOffS, tint, 1f);
-		radioOn = generateMask(radioOn, tint, 1f);
-		radioOnS = generateMask(radioOnS, tint, 1f);
-		radioDisabled = generateMask(radioDisabled, tint, 1f);
-		radioDisabledS = generateMask(radioDisabledS, tint, 1f);
-		dialogClose = generateMask(dialogClose, tint, 1f);
-		arrowDown = generateMask(arrowDown, tint, 1f);
-		arrowUp = generateMask(arrowUp, tint, 1f);
-		grid = generateMask(grid, tint, 1f);
+	public static Image getMenuIcon(int iconId) {
+		return ArrayUtils.getOrDefault(icons, iconId, null);
 	}
 
+	public static List<Image> getAppIcons() {
+		return new ArrayList<>(appIcons);
+	}
+
+	public static Image getArrowIcon(int direction) {
+		final Image icon;
+		switch (direction) {
+			case WEST:
+				icon = Resources.arrowLeft;
+				break;
+			case NORTH:
+				icon = Resources.arrowUp;
+				break;
+			case EAST:
+				icon = Resources.arrowRight;
+				break;
+			case SOUTH:
+			default:
+				icon = Resources.arrowDown;
+				break;
+		}
+		return icon;
+	}
+
+	public static Font getFont() {
+		return font;
+	}
+
+	public static Font getFontPixel() {
+		return fontPixel;
+	}
+
+	public static Font getFontPixelLarge() {
+		return fontPixelLarge;
+	}
 }

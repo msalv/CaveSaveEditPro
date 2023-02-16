@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
-
-import com.leo.cse.backend.BackendLogger;
+import java.util.List;
 
 /**
  * Generic PE EXE handling classes, used to patch games. The hope is that having
@@ -28,174 +26,82 @@ import com.leo.cse.backend.BackendLogger;
  * @author 20kdc
  */
 public class PEFile {
-	public static final int SECCHR_CODE = 0x20;
-	public static final int SECCHR_INITIALIZED_DATA = 0x40;
-	public static final int SECCHR_UNINITIALIZED_DATA = 0x80;
-	public static final int SECCHR_EXECUTE = 0x20000000;
-	public static final int SECCHR_READ = 0x40000000;
-	public static final int SECCHR_WRITE = 0x80000000;
-
-	// NOTE: The section headers in this are not to be trusted.
-	// They get rewritten on write().
-	// Also note, this implicitly defines the expectedTex.
-	public final byte[] earlyHeader;
 	// Always use headerPosition(x) before any sequence of operations,
 	// and always keep in LITTLE_ENDIAN order
-	public final ByteBuffer earlyHeaderBB;
+	private final ByteBuffer earlyHeaderBB;
 	// The complete list of sections.
-	// write() updates earlyHeader with this before writeout.
-	public final LinkedList<Section> sections = new LinkedList<>();
+	private final List<Section> sections = new ArrayList<>();
 
 	public PEFile(ByteBuffer source, int expectedTex) throws IOException {
 		source.order(ByteOrder.LITTLE_ENDIAN);
 		source.clear();
-		earlyHeader = new byte[expectedTex];
+
+		// NOTE: The section headers in this are not to be trusted.
+		// Also note, this implicitly defines the expectedTex.
+		final byte[] earlyHeader = new byte[expectedTex];
 		source.get(earlyHeader);
+
 		earlyHeaderBB = ByteBuffer.wrap(earlyHeader);
 		earlyHeaderBB.order(ByteOrder.LITTLE_ENDIAN);
 		earlyHeaderBB.position(getNtHeaders());
-		if (earlyHeaderBB.getInt() != 0x00004550)
+
+		if (earlyHeaderBB.getInt() != 0x00004550) {
 			throw new IOException("Not a PE file.");
+		}
+
 		earlyHeaderBB.getShort(); // We don't actually need to check the machine - if anything is wrong, see
 									// opt.header magic
-		int sectionCount = earlyHeaderBB.getShort() & 0xFFFF;
+
+		final int sectionCount = earlyHeaderBB.getShort() & 0xFFFF;
 		earlyHeaderBB.getInt();
 		earlyHeaderBB.getInt(); // symtab address
-		if (earlyHeaderBB.getInt() != 0)
+
+		if (earlyHeaderBB.getInt() != 0) {
 			throw new IOException(
 					"This file was linked with a symbol table. Since we don't want to accidentally destroy it, you get this error instead.");
-		int optHeadSize = earlyHeaderBB.getShort() & 0xFFFF;
+		}
+
+		final int optHeadSize = earlyHeaderBB.getShort() & 0xFFFF;
 		earlyHeaderBB.getShort(); // characteristics
+
 		// -- optional header --
 		int optHeadPoint = earlyHeaderBB.position();
-		if (optHeadSize < 0x78)
+		if (optHeadSize < 0x78) {
 			throw new IOException("Optional header size is under 0x78 (RESOURCE table info)");
-		if (earlyHeaderBB.getShort() != 0x010B)
+		}
+
+		if (earlyHeaderBB.getShort() != 0x010B) {
 			throw new IOException("Unknown optional header type");
+		}
+
 		// Check that size of headers is what we thought
-		if (getOptionalHeaderInt(0x3C) != expectedTex)
+		if (getOptionalHeaderInt(0x3C) != expectedTex) {
 			throw new IOException("Size of headers must be as expected due to linearization fun");
+		}
+
 		// Everything verified - load up the image sections
 		source.clear(); // Remove this line and things will fail...
 		source.position(optHeadPoint + optHeadSize);
+
 		for (int i = 0; i < sectionCount; i++) {
-			Section s = new Section();
+			final Section s = new Section();
 			s.read(source);
 			sections.add(s);
 		}
-		test(true);
+		verifyVirtualIntegrity();
 	}
 
-	// Returns file size if justOrderAndOverlap is given
-	private int test(boolean justOrderAndOverlap) throws IOException {
-		// You may be wondering: "Why so many passes?"
-		// The answer: It simplifies the code.
+	private void verifyVirtualIntegrity() throws IOException {
+		sections.sort(Comparator.comparingInt(section -> section.virtualAddrRelative));
 
-		// -- Test virtual integrity
-		Collections.sort(sections, new Comparator<Section>() {
-			@Override
-			public int compare(Section section, Section t1) {
-				if (section.virtualAddrRelative < t1.virtualAddrRelative)
-					return -1;
-				if (section.virtualAddrRelative == t1.virtualAddrRelative)
-					return 0; // Impossible if they are different, but...
-				return 1;
-			}
-		});
 		// Sets the minimum RVA we can use. This works due to the virtual sorting stuff.
 		int rvaHeaderFloor = 0;
 		for (Section s : sections) {
-			if (uCompare(s.virtualAddrRelative) < uCompare(rvaHeaderFloor))
+			if (uCompare(s.virtualAddrRelative) < uCompare(rvaHeaderFloor)) {
 				throw new IOException("Section RVA Overlap, " + s);
+			}
 			rvaHeaderFloor = s.virtualAddrRelative + s.virtualSize;
 		}
-		if (justOrderAndOverlap)
-			return -1;
-		// -- Allocate file addresses
-		int sectionAlignment = getOptionalHeaderInt(0x20);
-		int fileAlignment = getOptionalHeaderInt(0x24);
-		LinkedList<AllocationSpan> map = new LinkedList<>();
-		// Disallow collision with the primary header
-		map.add(new AllocationSpan(0, earlyHeader.length));
-		for (int i = 0; i < 2; i++) {
-			for (Section s : sections) {
-				if (s.metaLinearize != (i == 0))
-					continue;
-				boolean ok = false;
-				if (s.metaLinearize) {
-					if (alignForward(s.virtualAddrRelative, fileAlignment) != s.virtualAddrRelative)
-						BackendLogger.warn(
-								"File alignment being broken for linearization. This isn't a critical error, but it's not a good thing.");
-					ok = checkAllocation(map, new AllocationSpan(s.virtualAddrRelative, s.rawData.length));
-					s.cachedFutureFileAddress = s.virtualAddrRelative;
-				}
-				if (!ok) {
-					int position = 0;
-					while (!checkAllocation(map, new AllocationSpan(position, s.rawData.length)))
-						position += fileAlignment;
-					s.cachedFutureFileAddress = position;
-				}
-			}
-		}
-		// -- Set Section Count / Rewrite section headers
-		// 4: signature
-		// 2: field: number of sections
-		headerPosition(getNtHeaders() + 4 + 0x02);
-		earlyHeaderBB.putShort((short) sections.size());
-		headerPosition(getSectionHeaders());
-		for (Section s : sections)
-			s.writeHead(earlyHeaderBB);
-		// -- Image size is based on virtual size, not phys.
-		int imageSize = calculateImageSize();
-		setOptionalHeaderInt(0x38, alignForward(imageSize, sectionAlignment));
-		// -- File size based on the allocation map
-		int fileSize = 0;
-		for (AllocationSpan as : map) {
-			int v = as.start + as.length;
-			if (uCompare(v) > uCompare(fileSize))
-				fileSize = v;
-		}
-		return alignForward(fileSize, fileAlignment);
-	}
-
-	// This is also used in cases where we need to know the current end of virtual
-	// memory.
-	private int calculateImageSize() {
-		int imageSize = 0;
-		for (Section s : sections) {
-			int v = s.virtualAddrRelative + s.virtualSize;
-			if (uCompare(v) > uCompare(imageSize))
-				imageSize = v;
-		}
-		return imageSize;
-	}
-
-	private boolean checkAllocation(LinkedList<AllocationSpan> map, AllocationSpan allocationSpan) {
-		for (AllocationSpan as : map)
-			if (as.collides(allocationSpan))
-				return false;
-		map.add(allocationSpan);
-		return true;
-	}
-
-	public static int alignForward(int virtualAddrRelative, int fileAlignment) {
-		int mod = virtualAddrRelative % fileAlignment;
-		if (mod != 0)
-			virtualAddrRelative += fileAlignment - mod;
-		return virtualAddrRelative;
-	}
-
-	public byte[] write() throws IOException {
-		byte[] data = new byte[test(false)];
-		ByteBuffer d = ByteBuffer.wrap(data);
-		d.order(ByteOrder.LITTLE_ENDIAN);
-		d.put(earlyHeader);
-		for (Section s : sections) {
-			d.clear();
-			d.position(s.cachedFutureFileAddress);
-			d.put(s.rawData, 0, s.rawData.length);
-		}
-		return data;
 	}
 
 	public void headerPosition(int i) {
@@ -210,14 +116,6 @@ public class PEFile {
 		return earlyHeaderBB.getInt();
 	}
 
-	public int getSectionHeaders() {
-		int nt = getNtHeaders();
-		// 4: Signature
-		// 0x10: Field : Size Of Optional Header
-		headerPosition(nt + 4 + 0x10);
-		return nt + 4 + 0x14 + (earlyHeaderBB.getShort() & 0xFFFF);
-	}
-
 	/* Value IO, modifies earlyHeaderBB.position */
 
 	public int getOptionalHeaderInt(int ofs) {
@@ -225,12 +123,6 @@ public class PEFile {
 		// 0x14: IMAGE_FILE_HEADER
 		headerPosition(getNtHeaders() + 4 + 0x14 + ofs);
 		return earlyHeaderBB.getInt();
-	}
-
-	public void setOptionalHeaderInt(int ofs, int v) {
-		// 0x18: Signature + IMAGE_FILE_HEADER
-		headerPosition(getNtHeaders() + 0x18 + ofs);
-		earlyHeaderBB.putInt(v);
 	}
 
 	public ByteBuffer setupRVAPoint(int rva) {
@@ -268,54 +160,20 @@ public class PEFile {
 	public int getSectionIndexByTag(String tag) {
 		int idx = 0;
 		for (Section s : sections) {
-			if (s.decodeTag().equals(tag))
+			if (s.decodeTag().equals(tag)) {
 				return idx;
+			}
 			idx++;
 		}
 		return -1;
 	}
 
-	// Add in the given section and ensure the resources section is the latest
-	// section.
-	public void malloc(Section newS) {
-		int sectionAlignment = getOptionalHeaderInt(0x20);
-		Section resourcesSection = null;
-		int rsI = getResourcesIndex();
-		if (rsI != -1)
-			resourcesSection = sections.remove(rsI);
-		mallocInterior(newS, earlyHeader.length, sectionAlignment);
-		sections.add(newS);
-		if (resourcesSection != null) {
-			// resourcesSection has to be the latest section in the file
-			int oldResourcesRVA = resourcesSection.virtualAddrRelative;
-			mallocInterior(resourcesSection, calculateImageSize(), sectionAlignment);
-			int newResourcesRVA = resourcesSection.virtualAddrRelative;
-			resourcesSection.shiftResourceContents(newResourcesRVA - oldResourcesRVA);
-			sections.add(resourcesSection);
-			setOptionalHeaderInt(0x70, newResourcesRVA);
-		}
+	public Section getSectionAt(int rdataSecId) {
+		return sections.get(rdataSecId);
 	}
 
-	// Positions a section in virtual memory starting at a given RVA.
-	private void mallocInterior(Section resourcesSection, int i, int sectionAlignment) {
-		while (true) {
-			i = alignForward(i, sectionAlignment);
-			// Is this OK?
-			AllocationSpan as = new AllocationSpan(i, alignForward(resourcesSection.virtualSize, sectionAlignment));
-			boolean hit = false;
-			for (Section s : sections) {
-				if (new AllocationSpan(s.virtualAddrRelative, alignForward(s.virtualSize, sectionAlignment))
-						.collides(as)) {
-					hit = true;
-					break;
-				}
-			}
-			if (!hit) {
-				resourcesSection.virtualAddrRelative = i;
-				return;
-			}
-			i += sectionAlignment;
-		}
+	public int getSectionCount() {
+		return sections.size();
 	}
 
 	/**
@@ -331,14 +189,12 @@ public class PEFile {
 		// and if we detect linearization on anything else,
 		// we try to keep it that way for consistency.
 		public boolean metaLinearize;
+
 		// These are the fields we support (read: we don't enforce these to be 0):
 		// Tag (in Windows-1252)
 		public final byte[] tag = new byte[8];
 		public int virtualSize, virtualAddrRelative;
-		// File address that test(true) wrote into the section header
-		private int cachedFutureFileAddress;
-		// File address is implied by linearization or automatic rearranging during
-		// write()
+
 		// The "Raw Data" - Set position before use.
 		public byte[] rawData = blankRawData;
 		public int characteristics = 0xE0000040;
@@ -352,59 +208,49 @@ public class PEFile {
 			virtualSize = bb.getInt();
 			virtualAddrRelative = bb.getInt();
 			rawData = new byte[bb.getInt()];
+
 			int rawDataPointer = bb.getInt();
 			metaLinearize = rawDataPointer == virtualAddrRelative;
-			int saved = bb.position();
+
+			final int saved = bb.position();
 			bb.clear();
 			bb.position(rawDataPointer);
 			bb.get(rawData);
+
 			bb.clear();
 			bb.position(saved);
+
 			bb.getInt();
 			bb.getInt();
-			if (bb.getShort() != 0)
+
+			if (bb.getShort() != 0) {
 				throw new IOException("Relocations not allowed");
-			if (bb.getShort() != 0)
-				throw new IOException("Line numbers not allowed");
-			characteristics = bb.getInt();
-		}
-
-		public void writeHead(ByteBuffer earlyHeaderBB) {
-			earlyHeaderBB.put(tag);
-			earlyHeaderBB.putInt(virtualSize);
-			earlyHeaderBB.putInt(virtualAddrRelative);
-			earlyHeaderBB.putInt(rawData.length);
-			earlyHeaderBB.putInt(cachedFutureFileAddress);
-			earlyHeaderBB.putInt(0);
-			earlyHeaderBB.putInt(0);
-			earlyHeaderBB.putShort((short) 0);
-			earlyHeaderBB.putShort((short) 0);
-			earlyHeaderBB.putInt(characteristics);
-		}
-
-		public void encodeTag(String s) {
-			byte[] data = s.getBytes(Charset.forName("Windows-1252"));
-			for (int i = 0; i < tag.length; i++) {
-				if (i < data.length) {
-					tag[i] = data[i];
-				} else {
-					tag[i] = 0;
-				}
 			}
+
+			if (bb.getShort() != 0) {
+				throw new IOException("Line numbers not allowed");
+			}
+
+			characteristics = bb.getInt();
 		}
 
 		public String decodeTag() {
 			int maxL = 0;
-			for (int i = 0; i < tag.length; i++)
-				if (tag[i] != 0)
+			for (int i = 0; i < tag.length; i++) {
+				if (tag[i] != 0) {
 					maxL = i + 1;
+				}
+			}
 			return new String(tag, 0, maxL, Charset.forName("Windows-1252"));
 		}
 
 		public String toString() {
-			return decodeTag() + " : RVA " + Integer.toHexString(virtualAddrRelative) + " VS "
-					+ Integer.toHexString(virtualSize) + " : RDS " + Integer.toHexString(rawData.length) + " : CH "
-					+ Integer.toHexString(characteristics);
+			return String.format("%s : RVA %s VS %s : RDS %s : CH %s",
+					decodeTag(),
+					Integer.toHexString(virtualAddrRelative),
+					Integer.toHexString(virtualSize),
+					Integer.toHexString(rawData.length),
+					Integer.toHexString(characteristics));
 		}
 
 		// -- Copied from the old ExeSec, these routines appear reliable so let's not
@@ -432,35 +278,11 @@ public class PEFile {
 				data.putInt(rva, oldVal + amt);
 			}
 		}
-
-		public void shiftResourceContents(int amt) {
-			ByteBuffer bb = ByteBuffer.wrap(rawData);
-			bb.order(ByteOrder.LITTLE_ENDIAN);
-			shiftDirTable(bb, amt, 0);
-		}
 	}
 
 	public static int uCompare(int a) {
 		// 0xFFFFFFFF (-1) becomes 0x7FFFFFFF (highest number)
 		// 0x00000000 (0) becomes 0x80000000 (lowest number)
 		return a ^ 0x80000000;
-	}
-
-	private class AllocationSpan {
-		public int start, length;
-
-		public AllocationSpan(int fa, int size) {
-			start = fa;
-			length = size;
-		}
-
-		public boolean collides(AllocationSpan as) {
-			return within(as.start) || within(as.start + as.length - 1) || as.within(start)
-					|| as.within(start + length - 1);
-		}
-
-		private boolean within(int target) {
-			return (uCompare(target) >= uCompare(start)) && (uCompare(start + length) > uCompare(target));
-		}
 	}
 }

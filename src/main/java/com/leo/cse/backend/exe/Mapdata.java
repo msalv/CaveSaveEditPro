@@ -1,160 +1,69 @@
 package com.leo.cse.backend.exe;
 
-import java.nio.ByteBuffer;
-
-import com.leo.cse.backend.StrTools;
-import com.leo.cse.backend.exe.ExeData.ModType;
-
-// credit to Noxid for making Booster's Lab open source so I could steal code
-// from it
 /**
- * Stores abstract information for a map. An instance of {@link MapInfo} should
- * be used
- * for loading maps.
+ * Stores an information about a map. An instance of {@link MapInfo} should
+ * be used for loading maps.
  *
  * @author Leo
  *
  */
 public class Mapdata {
-
 	/**
 	 * The map's ID.
 	 */
-	private int mapNum;
+	private final int mapNum;
 	/**
 	 * The map's tileset.
 	 */
-	private String tileset;
+	private final String tileset;
 	/**
 	 * The map's file name.
 	 */
-	private String fileName;
+	private final String fileName;
 	/**
 	 * The map's scroll type.
 	 */
-	private int scrollType;
+	private final int scrollType;
 	/**
 	 * The map's background image.
 	 */
-	private String bgName;
+	private final String bgName;
 	/**
 	 * The map's 1st NPC sheet.
 	 */
-	private String npcSheet1;
+	private final String npcSheet1;
 	/**
 	 * The map's 2nd NPC sheet.
 	 */
-	private String npcSheet2;
+	private final String npcSheet2;
 	/**
 	 * The map's special boss ID.
 	 */
-	private int bossNum;
+	private final int bossNum;
 	/**
 	 * The map's name.
 	 */
-	private String mapName;
+	private final String mapName;
 	/**
 	 * The map's name in Japanese. CS+ only.
 	 */
-	private byte[] jpName;
+	private final byte[] jpName;
 
-	public Mapdata(int num, ByteBuffer buf, ModType format, String charEncoding) {
-		mapNum = num;
-		switch (format) {
-		case STANDARD: // from exe
-			/*
-			typedef struct {
-				   char tileset[32];
-				   char filename[32];
-				   char scrollType[4];
-				   char bgName[32];
-				   char npc1[32];
-				   char npc2[32];
-				   char bossNum;
-				   char mapName[35];
-				}nMapData;
-				*/
-			byte[] buffer = new byte[0x23];
-			buf.get(buffer, 0, 0x20);
-			tileset = StrTools.CString(buffer, charEncoding);
-			buf.get(buffer, 0, 0x20);
-			fileName = StrTools.CString(buffer, charEncoding);
-			scrollType = buf.getInt() & 0xFF;
-			buf.get(buffer, 0, 0x20);
-			bgName = StrTools.CString(buffer, charEncoding);
-			buf.get(buffer, 0, 0x20);
-			npcSheet1 = StrTools.CString(buffer, charEncoding);
-			buf.get(buffer, 0, 0x20);
-			npcSheet2 = StrTools.CString(buffer, charEncoding);
-			bossNum = buf.get();
-			buf.get(buffer, 0, 0x23);
-			mapName = StrTools.CString(buffer, charEncoding);
-			jpName = new byte[0x20];
-			break;
-		case PLUS: // from stage.tbl
-			/*
-			typedef struct {
-				   char tileset[32];
-				   char filename[32];
-				   char scrollType[4];
-				   char bgName[32];
-				   char npc1[32];
-				   char npc2[32];
-				   char bossNum;
-				   char jpName[32];
-				   char mapName[32];
-				}nMapData;
-				*/
-			byte[] buf32 = new byte[32];
-			buf.get(buf32);
-			tileset = StrTools.CString(buf32, charEncoding);
-			buf.get(buf32);
-			fileName = StrTools.CString(buf32, charEncoding);
-			scrollType = buf.getInt();
-			buf.get(buf32);
-			bgName = StrTools.CString(buf32, charEncoding);
-			buf.get(buf32);
-			npcSheet1 = StrTools.CString(buf32, charEncoding);
-			buf.get(buf32);
-			npcSheet2 = StrTools.CString(buf32, charEncoding);
-			bossNum = buf.get();
-			buf.get(buf32);
-			jpName = buf32.clone();
-			buf.get(buf32);
-			mapName = StrTools.CString(buf32, charEncoding);
-			break;
-		default:
-			// unknown/unused
-			break;
-		}
-	}
-
-	/**
-	 * Creates a new empty map.
-	 *
-	 * @param mapNum
-	 *            map ID
-	 */
-	public Mapdata(int mapNum) {
+	public Mapdata(int mapNum, String tileset, String fileName, int scrollType, String bgName, String npcSheet1, String npcSheet2, int bossNum, String mapName, byte[] jpName) {
 		this.mapNum = mapNum;
-		tileset = "0";
-		fileName = "0";
-		scrollType = 0;
-		bgName = "0";
-		npcSheet1 = "0";
-		npcSheet2 = "0";
-		bossNum = 0;
-		mapName = "Null";
-		jpName = new byte[0x20];
+		this.tileset = tileset;
+		this.fileName = fileName;
+		this.scrollType = scrollType;
+		this.bgName = bgName;
+		this.npcSheet1 = npcSheet1;
+		this.npcSheet2 = npcSheet2;
+		this.bossNum = bossNum;
+		this.mapName = mapName;
+		this.jpName = jpName;
 	}
 
-	/**
-	 * Gets the map's ID.
-	 *
-	 * @return map ID
-	 */
-	public int getMapNum() {
-		return mapNum;
+	public Mapdata(int mapNum, String tileset, String fileName, int scrollType, String bgName, String npcSheet1, String npcSheet2, int bossNum, String mapName) {
+		this(mapNum, tileset, fileName, scrollType, bgName, npcSheet1, npcSheet2, bossNum, mapName, new byte[0x20]);
 	}
 
 	/**
@@ -212,15 +121,6 @@ public class Mapdata {
 	}
 
 	/**
-	 * Gets the map's special boss ID.
-	 * 
-	 * @return boss number
-	 */
-	public int getBossNum() {
-		return bossNum;
-	}
-
-	/**
 	 * Gets the map's name.
 	 *
 	 * @return display name
@@ -229,13 +129,18 @@ public class Mapdata {
 		return mapName;
 	}
 
-	/**
-	 * Gets the map's name in Japanese.
-	 * 
-	 * @return JP name
-	 */
-	public byte[] getJpName() {
-		return jpName.clone();
+	@Override
+	public String toString() {
+		return "Mapdata{" +
+				"mapNum=" + mapNum +
+				", tileset='" + tileset + '\'' +
+				", fileName='" + fileName + '\'' +
+				", scrollType=" + scrollType +
+				", bgName='" + bgName + '\'' +
+				", npcSheet1='" + npcSheet1 + '\'' +
+				", npcSheet2='" + npcSheet2 + '\'' +
+				", bossNum=" + bossNum +
+				", mapName='" + mapName + '\'' +
+				'}';
 	}
-
 }

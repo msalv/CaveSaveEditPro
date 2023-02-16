@@ -13,7 +13,7 @@ public class EntityData {
 	/**
 	 * The entity's ID.
 	 */
-	private int entityNum;
+	private final int entityNum;
 
 	/**
 	 * Gets the entity's ID.
@@ -27,7 +27,7 @@ public class EntityData {
 	/**
 	 * The entity's HP.
 	 */
-	private int tbl_HP;
+	private final int tbl_HP;
 
 	/**
 	 * Gets the entity's HP.
@@ -41,21 +41,22 @@ public class EntityData {
 	/**
 	 * The entity's display rectangle.
 	 */
-	private Rectangle tbl_display;
+	private final Rectangle tbl_display;
 
 	/**
 	 * Gets the entity's display rectangle.
 	 *
 	 * @return entity display rect
 	 */
-	public Rectangle getDisplay() {
-		return new Rectangle(tbl_display);
+	public Rectangle getDisplay(Rectangle rect) {
+		rect.setBounds(tbl_display);
+		return rect;
 	}
 
 	/**
 	 * The entity's hitbox.
 	 */
-	private Rectangle tbl_hitbox;
+	private final Rectangle tbl_hitbox;
 
 	/**
 	 * Gets the entity's hitbox.
@@ -69,7 +70,7 @@ public class EntityData {
 	/**
 	 * The entity's tileset ID.
 	 */
-	private int tbl_tileset;
+	private final int tbl_tileset;
 
 	/**
 	 * Gets the entity's tileset ID.
@@ -83,7 +84,7 @@ public class EntityData {
 	/**
 	 * The amount of EXP this entity drops on death.
 	 */
-	private int tbl_exp;
+	private final int tbl_exp;
 
 	/**
 	 * Gets the amount of EXP this entity drops on death.
@@ -97,7 +98,7 @@ public class EntityData {
 	/**
 	 * The amount of damage this entity deals.
 	 */
-	private int tbl_damage;
+	private final int tbl_damage;
 
 	/**
 	 * Gets the amount of damage this entity deals.
@@ -111,7 +112,7 @@ public class EntityData {
 	/**
 	 * The entity's flags.
 	 */
-	private int tbl_flags;
+	private final int tbl_flags;
 
 	/**
 	 * Get the entity's flags.
@@ -125,7 +126,7 @@ public class EntityData {
 	/**
 	 * The entity's "death" sound.
 	 */
-	private int tbl_deathSound;
+	private final int tbl_deathSound;
 
 	/**
 	 * Get the entity's "death" sound.
@@ -139,7 +140,7 @@ public class EntityData {
 	/**
 	 * The entity's "hurt" sound.
 	 */
-	private int tbl_hurtSound;
+	private final int tbl_hurtSound;
 
 	/**
 	 * Get the entity's "hurt" sound.
@@ -153,7 +154,7 @@ public class EntityData {
 	/**
 	 * The amount of smoke this entity creates on death.
 	 */
-	private int tbl_size;
+	private final int tbl_size;
 
 	/**
 	 * Gets the amount of smoke this entity creates on death.
@@ -162,18 +163,6 @@ public class EntityData {
 	 */
 	public int getSize() {
 		return tbl_size;
-	}
-
-	/**
-	 * Creates a blank npc.tbl entry.
-	 *
-	 * @param num
-	 *            entity ID
-	 */
-	EntityData(int num) {
-		tbl_hitbox = new Rectangle(4, 4, 4, 4);
-		tbl_display = new Rectangle(8, 8, 8, 8);
-		entityNum = num;
 	}
 
 	/**
@@ -215,25 +204,5 @@ public class EntityData {
 		tbl_tileset = tileset;
 		tbl_display = display;
 		tbl_hitbox = hitbox;
-	}
-
-	/**
-	 * Clones an npc.tbl entry from another entry.
-	 *
-	 * @param other
-	 *            source entry
-	 */
-	EntityData(EntityData other) {
-		entityNum = other.entityNum;
-		tbl_damage = other.tbl_damage;
-		tbl_deathSound = other.tbl_deathSound;
-		tbl_exp = other.tbl_exp;
-		tbl_flags = other.tbl_flags;
-		tbl_HP = other.tbl_HP;
-		tbl_hurtSound = other.tbl_hurtSound;
-		tbl_size = other.tbl_size;
-		tbl_tileset = other.tbl_tileset;
-		tbl_display = new Rectangle(other.tbl_display);
-		tbl_hitbox = new Rectangle(other.tbl_hitbox);
 	}
 }

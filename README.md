@@ -1,24 +1,52 @@
-# CaveSaveEdit [![Build Status](https://travis-ci.org/Leo40Git/CaveSaveEdit.svg?branch=master)](https://travis-ci.org/Leo40Git/CaveSaveEdit)
-A Java-based Cave Story profile editor, complete with mod support.
+# CaveSaveEdit Pro 5.0
+Save files editor for Cave Story and Cave Story+
+
+Improved and refactored fork of CaveSaveEdit by [@Leo40Story](https://github.com/Leo40Git)
+
+## What's new in Pro Version
+- completely refactored
+- config is stored in a local `prefs.cfg` file
+- new appearance
+- new Cave Story+ tab
+- supports game resources from various game editions and clones
+- bug fixes
+
 # How to Compile
-First off, CaveSaveEdit will only compile on Java 8 without modifications to the map sorting functions in `com.leo.cse.frontend.FrontUtils` and a few other places where lambdas are used.  
-CSE has a dependency on [Rhino](https://github.com/mozilla/rhino). Versions 1_7R5, 1.7.7.2 and 1.7.8 have been confirmed to work, although other versions might work as well.  
-There is only one `main` method, located in `com.leo.cse.frontend.Main`.  
-This is an Eclipse project, although I believe IntelliJ can import Eclipse projects natively.  
+Run `./gradlew jar` to build CaveSaveEdit.jar file.  
+Run `java -jar CaveSaveEdit.jar` to launch the application.
+
 # How to Use
-Click on "File" -> "Load Profile" to load a profile. If a Profile.dat file is found in the same directory as the application, it will be loaded automatically on startup.  
-Modify the values to your liking, and then click on "File" -> "Save" in the toolbar to save the new profile.  
-Yes, it's that simple!
-# MCI
-The MCI system is used for mod support.  
-This system allows users to add custom items, weapons, equipment and more to the save editor with ease.  
-See [the MCI readme](MCI.md) for more information about the MCI system.  
-Want to share MCI files you have created or obtain MCI files that other people have made? Check the **[MCI Repository](https://github.com/Leo40Git/CSE-MCI-Repository)**!
+
+### 1. Open Profile.dat
+Save game file is usually located in the same directory as your Cave Story executable file.   
+It is called ‘Profile.dat’
+
+If you have a Steam version of Cave Story+ installed then open Steam and go to your Library.   
+Right-click the game and select ‘Properties’ from the context menu.   
+In the ‘Properties’ window, go to the ‘Local Files’ tab and click ‘Browse Local Files’.
+
+To open a Profile.dat go to *File _→_ Open...* menu.
+
+### 2. Load Game Resources (optional)
+Also you can load resources in order to see game sprites and maps.
+
+Select one of these files according to your version of the game:
+- Cave Story (freeware) — `Doukutsu.exe`
+- Cave Story+ — `stage.tbl`
+- NXEngine/NXEngine-evo — `stage.dat`
+- Doukutsu-rs/CSE2E — `mrmap.bin`
+
+One of these files should be located in the game folder or in the ‘data’ subfolder.
+
+You can load them via *File _→_ Load Game Resources...* menu.
+
+# Troubleshooting
+
+If you’re having issues with the game text (e. g. map names), you can try to change its encoding in the *Settings*.
+
 # Notes
-This editor only works with vanilla profiles, meaning that any mod with custom profiles (i.e. any of txin's mods excluding The Ultimate Challenge) will **not** work.  
-You _can_ edit save files with modified extensions, just change the file filter on the "open profile" window to "All files" and you're good.
+This editor only works with vanilla profiles, meaning that any mod with custom profiles will **not** work.
+
 # Credits
-- **Noxid ([@taedixon](https://github.com/taedixon), [@Noxid](https://www.cavestory.org/forums/members/noxid.863)):** Executable related code (classes in `com.leo.cse.backend.exe`), taken with~~out~~ permission from **[Booster's Lab](https://github.com/taedixon/boosters-lab)**.
-- **20kdc ([@20kdc](https://github.com/20kdc), [@gamemanj](https://www.cavestory.org/forums/members/gamemanj.7022)):** ".rsrc" segment-related code in ExeData
-- **zxin ([@zxinmine](https://github.com/zxinmine), [@zxin](https://www.cavestory.org/forums/members/zxin.7232)):** UI sprites (`ui.png` and `shadow.png`) 
-- **Carrotlord ([@Carrotlord](https://www.cavestory.org/forums/members/carrotlord.1111)):** StrTools class (`com.leo.cse.backend.StrTools`)
+Honorable Mentions of the Original Version by [@Leo40Git](https://github.com/Leo40Git):  
+[Noxid](https://www.cavestory.org/forums/members/noxid.863) [@taedixon](https://github.com/taedixon), [gamemanj](https://www.cavestory.org/forums/members/gamemanj.7022) [@20kdc](https://github.com/20kdc), [zxin](https://www.cavestory.org/forums/members/zxin.7232) [@zxinmine](https://github.com/zxinmine), [Carrotlord](https://www.cavestory.org/forums/members/carrotlord.1111)
