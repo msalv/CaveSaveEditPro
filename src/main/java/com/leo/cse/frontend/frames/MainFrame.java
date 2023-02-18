@@ -9,10 +9,15 @@ import com.leo.cse.frontend.Resources;
 import com.leo.cse.frontend.editor.SaveEditorPanel;
 
 import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 public class MainFrame extends JFrame implements ProfileStateChangeListener {
     private static final String WINDOW_TITLE = "CaveSaveEdit Pro";
@@ -25,11 +30,24 @@ public class MainFrame extends JFrame implements ProfileStateChangeListener {
         this.profileManager = profileManager;
 
         final SaveEditorPanel saveEditorPanel = new SaveEditorPanel(this, profileManager, resourcesManager);
-        add(saveEditorPanel);
+        addPanel(saveEditorPanel);
 
         pack();
 
         profileManager.addListener(this);
+    }
+
+    private void addPanel(JPanel panel) {
+        final Dimension size = getSuitableWindowSize();
+        if (size.width < WINDOW_SIZE.width || size.height < WINDOW_SIZE.height) {
+            panel.setPreferredSize(WINDOW_SIZE);
+            final JScrollPane scrollPane = new JScrollPane(panel);
+            scrollPane.setPreferredSize(size);
+            add(scrollPane);
+            setResizable(true);
+        } else {
+            add(panel);
+        }
     }
 
     @Override
@@ -40,9 +58,10 @@ public class MainFrame extends JFrame implements ProfileStateChangeListener {
         setTitle(WINDOW_TITLE);
         setIconImages(Resources.getAppIcons());
 
-        setMaximumSize(WINDOW_SIZE);
-        setMinimumSize(WINDOW_SIZE);
-        setPreferredSize(WINDOW_SIZE);
+        final Dimension size = getSuitableWindowSize();
+        setPreferredSize(size);
+        setMaximumSize(size);
+        setMinimumSize(size);
 
         setResizable(false);
         setLocationRelativeTo(null);
@@ -58,6 +77,43 @@ public class MainFrame extends JFrame implements ProfileStateChangeListener {
             }
         } else {
             this.setTitle(WINDOW_TITLE);
+        }
+    }
+
+    private static Dimension getSuitableWindowSize() {
+        final Dimension result = new Dimension(WINDOW_SIZE);
+        final Dimension screenSize = getScreenSize();
+
+        if (screenSize == null) {
+            return result;
+        }
+
+        if (screenSize.width * screenSize.height <= 320 * 240) {
+            return result;
+        }
+
+        if (screenSize.width < result.width) {
+            result.width = (int)(screenSize.width * 0.9f);
+        }
+        if (screenSize.height < result.height) {
+            result.height = (int)(screenSize.height * 0.9f);
+        }
+
+        return result;
+    }
+
+    private static Dimension getScreenSize() {
+        try {
+            final DisplayMode displayMode = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice()
+                    .getDisplayMode();
+            return new Dimension(displayMode.getWidth(), displayMode.getHeight());
+        } catch (Exception ex) {
+            try {
+                return Toolkit.getDefaultToolkit().getScreenSize();
+            } catch (Exception e) {
+                return WINDOW_SIZE;
+            }
         }
     }
 
