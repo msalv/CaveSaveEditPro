@@ -15,7 +15,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Simplified AsyncTask implementation
  */
 public abstract class AsyncTask<Progress, Result> {
-    private final static Executor sSingleThreadExecutor = Executors.newSingleThreadExecutor();
+    private final static Executor sSingleThreadExecutor = Executors.newSingleThreadExecutor(
+            new AsyncTaskThreadFactory()
+    );
 
     private final FutureTask<Result> future;
 
