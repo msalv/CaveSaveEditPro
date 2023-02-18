@@ -1,6 +1,7 @@
 package com.leo.cse.backend.res.loading.impl;
 
 import com.leo.cse.backend.CString;
+import com.leo.cse.util.BufferCompat;
 import com.leo.cse.util.FileUtils;
 import com.leo.cse.backend.exe.ExePointers;
 import com.leo.cse.backend.exe.GameResourcesLoadingPayload;
@@ -89,7 +90,7 @@ public class PlusResourcesLoader extends GameResourcesLoader {
         final ByteBuffer dBuf = ByteBuffer.allocate(numMaps * 229);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         dBuf.put(data, 0, numMaps * 229);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         for (int i = 0; i < numMaps; i++) {
             mapDataList.add(createMapData(i, dBuf, encoding));

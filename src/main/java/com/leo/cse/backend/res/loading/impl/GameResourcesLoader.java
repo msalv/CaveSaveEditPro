@@ -1,5 +1,6 @@
 package com.leo.cse.backend.res.loading.impl;
 
+import com.leo.cse.util.BufferCompat;
 import com.leo.cse.util.FileUtils;
 import com.leo.cse.backend.exe.EntityData;
 import com.leo.cse.backend.exe.ExePointers;
@@ -165,7 +166,7 @@ abstract public class GameResourcesLoader {
         ByteBuffer dBuf = ByteBuffer.allocateDirect(2 * calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final short[] flagDat = new short[calculatedNpcs];
         for (int i = 0; i < flagDat.length; i++) {
@@ -177,7 +178,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(2 * calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final short[] healthDat = new short[calculatedNpcs];
         for (int i = 0; i < healthDat.length; i++) {
@@ -189,7 +190,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final byte[] tilesetDat = new byte[calculatedNpcs];
         for (int i = 0; i < tilesetDat.length; i++) {
@@ -201,7 +202,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
         final byte[] deathDat = new byte[calculatedNpcs];
         for (int i = 0; i < deathDat.length; i++) {
             deathDat[i] = dBuf.get();
@@ -212,7 +213,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final byte[] hurtDat = new byte[calculatedNpcs];
         for (int i = 0; i < hurtDat.length; i++) {
@@ -224,7 +225,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final byte[] sizeDat = new byte[calculatedNpcs];
         for (int i = 0; i < sizeDat.length; i++) {
@@ -236,7 +237,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(4 * calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final int[] expDat = new int[calculatedNpcs];
         for (int i = 0; i < expDat.length; i++) {
@@ -248,7 +249,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(4 * calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final int[] damageDat = new int[calculatedNpcs];
         for (int i = 0; i < damageDat.length; i++) {
@@ -262,7 +263,7 @@ abstract public class GameResourcesLoader {
         dBuf = ByteBuffer.allocate(4 * calculatedNpcs);
         dBuf.order(ByteOrder.LITTLE_ENDIAN);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final byte[] hitboxDat = new byte[4 * calculatedNpcs];
         for (int i = 0; i < hitboxDat.length; i++) {
@@ -275,9 +276,9 @@ abstract public class GameResourcesLoader {
         int displayBoxCounter = 0;
 
         // read display box section
-        dBuf.clear();
+        BufferCompat.clear(dBuf);
         channel.read(dBuf);
-        dBuf.flip();
+        BufferCompat.flip(dBuf);
 
         final byte[] displayDat = new byte[4 * calculatedNpcs];
         for (int i = 0; i < displayDat.length; i++) {
@@ -513,7 +514,7 @@ abstract public class GameResourcesLoader {
             hBuf.order(ByteOrder.LITTLE_ENDIAN);
             inChan.read(hBuf);
             // read the filetag
-            hBuf.flip();
+            BufferCompat.flip(hBuf);
             final byte[] tagArray = new byte[3];
             hBuf.get(tagArray, 0, 3);
             if (!(new String(tagArray).equals(getExeString(ExePointers.PXM_TAG_PTR)))) {
@@ -527,7 +528,7 @@ abstract public class GameResourcesLoader {
             mapBuf = ByteBuffer.allocate(mapY * mapX);
             mapBuf.order(ByteOrder.LITTLE_ENDIAN);
             inChan.read(mapBuf);
-            mapBuf.flip();
+            BufferCompat.flip(mapBuf);
         } catch (IOException e) {
             AppLogger.error(String.format("Failed to load PXM:\n %s", currentFileName), e);
             mapX = 21;
@@ -596,7 +597,7 @@ abstract public class GameResourcesLoader {
         try (FileInputStream inStream = new FileInputStream(srcFile); FileChannel inChan = inStream.getChannel()) {
             final ByteBuffer pxaBuf = ByteBuffer.wrap(pxaArray);
             inChan.read(pxaBuf);
-            pxaBuf.flip();
+            BufferCompat.flip(pxaBuf);
             //final byte[] pxaArray = pxaBuf.array();
             //pxaMap.put(srcFile, pxaArray);
         } catch (Exception e) {
@@ -626,14 +627,14 @@ abstract public class GameResourcesLoader {
             hBuf.order(ByteOrder.LITTLE_ENDIAN);
 
             inChan.read(hBuf);
-            hBuf.flip();
+            BufferCompat.flip(hBuf);
 
             final int nEnt = hBuf.getShort(4);
             final ByteBuffer eBuf = ByteBuffer.allocate(nEnt * 12 + 2);
 
             eBuf.order(ByteOrder.LITTLE_ENDIAN);
             inChan.read(eBuf);
-            eBuf.flip();
+            BufferCompat.flip(eBuf);
             eBuf.getShort(); // discard this value
 
             for (int i = 0; i < nEnt; i++) {

@@ -1,5 +1,7 @@
 package com.leo.cse.backend;
 
+import com.leo.cse.util.BufferCompat;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ public class BytesReaderWriter {
 	 *            amount of bytes to write
 	 */
 	private static void putBytesToBuffer(byte[] data, int ptr, int size) {
-		sBuffer.get().clear();
+		BufferCompat.clear(sBuffer.get());
 		for (int i = 0; i < size; i++) {
 			sBuffer.get().put(data[ptr + i]);
 		}
@@ -297,7 +299,7 @@ public class BytesReaderWriter {
 	 *            short to write
 	 */
 	public static void writeShort(byte[] data, int ptr, short value) {
-		sBuffer.get().clear();
+		BufferCompat.clear(sBuffer.get());
 		sBuffer.get().putShort(value);
 		writeBytesFromBuffer(data, ptr, Short.BYTES);
 	}
@@ -332,7 +334,7 @@ public class BytesReaderWriter {
 	 *            integer to write
 	 */
 	public static void writeInt(byte[] data, int ptr, int value) {
-		sBuffer.get().clear();
+		BufferCompat.clear(sBuffer.get());
 		sBuffer.get().putInt(value);
 		writeBytesFromBuffer(data, ptr, Integer.BYTES);
 	}
@@ -367,7 +369,7 @@ public class BytesReaderWriter {
 	 *            integer to write
 	 */
 	public static void writeLong(byte[] data, int ptr, long value) {
-		sBuffer.get().clear();
+		BufferCompat.clear(sBuffer.get());
 		sBuffer.get().putLong(value);
 		writeBytesFromBuffer(data, ptr, Long.BYTES);
 	}
