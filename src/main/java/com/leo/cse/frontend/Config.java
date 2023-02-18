@@ -114,4 +114,14 @@ public class Config {
 			AppLogger.error("Failed to save config", e);
 		}
 	}
+
+	/**
+	 * Set some sensitive preferences to safe values
+	 * to prevent runtime exceptions from being thrown again
+	 */
+	public static void safeMode() {
+		setBoolean(Config.KEY_AUTOLOAD_PROFILE, false);
+		setBoolean(Config.KEY_AUTOLOAD_EXE, false);
+		setBoolean(Config.KEY_SKIP_UPDATE_CHECK, true);
+	}
 }

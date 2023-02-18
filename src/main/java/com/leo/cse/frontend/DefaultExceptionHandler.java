@@ -21,8 +21,7 @@ public class DefaultExceptionHandler implements UncaughtExceptionHandler {
 		try {
 			// Do not load profile and game resources on restart
 			// to avoid same errors
-			Config.setBoolean(Config.KEY_AUTOLOAD_PROFILE, false);
-			Config.setBoolean(Config.KEY_AUTOLOAD_EXE, false);
+			Config.safeMode();
 			CaveSaveEdit.restart();
 		} catch (Exception ex) {
 			System.exit(1);
