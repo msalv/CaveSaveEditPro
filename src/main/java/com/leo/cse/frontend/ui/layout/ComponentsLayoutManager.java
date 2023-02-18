@@ -164,16 +164,19 @@ public abstract class ComponentsLayoutManager implements LayoutManager2 {
     }
 
     protected Dimension measureChild(Component child, int availWidth, int availHeight) {
+        final boolean isMinimumSizeSet = child.isMinimumSizeSet();
         final boolean isMaximumSizeSet = child.isMaximumSizeSet();
-        final Dimension minSize = child.isMinimumSizeSet() ? child.getMinimumSize() : MIN_SIZE;
-        final Dimension maxSize = child.isMaximumSizeSet() ? child.getMaximumSize() : MAX_SIZE;
+        final Dimension minSize = isMinimumSizeSet ? child.getMinimumSize() : MIN_SIZE;
+        final Dimension maxSize = isMaximumSizeSet ? child.getMaximumSize() : MAX_SIZE;
 
         // Dirty hack to constrain child width
+        child.setMinimumSize(new Dimension(Math.min(minSize.width, availWidth), Math.min(minSize.height, availHeight)));
         child.setMaximumSize(new Dimension(Math.min(maxSize.width, availWidth), Math.min(maxSize.height, availHeight)));
 
         final Dimension prefSize = child.getPreferredSize(); // triggers nested measuring
 
-        // Restore max size
+        // Restore min and max sizes
+        child.setMinimumSize(isMinimumSizeSet ? minSize : null);
         child.setMaximumSize(isMaximumSizeSet ? maxSize : null);
 
         final int prefWidth = prefSize.width;
@@ -181,11 +184,11 @@ public abstract class ComponentsLayoutManager implements LayoutManager2 {
 
         final int w = prefWidth <= availWidth
                 ? Math.max(prefWidth, Math.min(minSize.width, availWidth))
-                : Math.max(minSize.width, Math.min(maxSize.width, availWidth));
+                : Math.max(Math.min(minSize.width, availWidth), Math.min(maxSize.width, availWidth));
 
         final int h = prefHeight <= availHeight
                 ? Math.max(prefHeight, Math.min(minSize.height, availHeight))
-                : Math.max(minSize.height, Math.min(maxSize.height, availHeight));
+                : Math.max(Math.min(minSize.height, availHeight), Math.min(maxSize.height, availHeight));
 
         return setChildDimension(child, w, h);
     }
