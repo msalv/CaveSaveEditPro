@@ -12,7 +12,8 @@ Improved and refactored fork of CaveSaveEdit by [@Leo40Story](https://github.com
 - bug fixes
 
 # How to Compile
-Run `./gradlew jar` to build CaveSaveEdit.jar file.  
+Run `./gradlew jar` to build CaveSaveEdit.jar file.
+CaveSaveEdit.jar would compile to `./build/libs` directory.
 Run `java -jar CaveSaveEdit.jar` to launch the application.
 
 # How to Use
