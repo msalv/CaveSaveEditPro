@@ -222,6 +222,7 @@ public class AboutDialog extends RootDialog {
             super.paintComponent(g);
 
             g.setColor(ThemeData.getAccentColor());
+            g.setFont(Resources.getFont());
             GraphicsHelper.drawTextCentered(g, MESSAGE, insets.left + 32, insets.top + 32);
 
             g.setColor(ThemeData.getAccentColor());
