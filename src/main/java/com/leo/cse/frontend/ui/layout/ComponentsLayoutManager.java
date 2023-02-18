@@ -152,11 +152,11 @@ public abstract class ComponentsLayoutManager implements LayoutManager2 {
 
                 final int w = prefSize.width <= parentWidth
                         ? Math.max(prefSize.width, Math.min(minSize.width, parentWidth))
-                        : Math.max(minSize.width, Math.min(maxSize.width, parentWidth));
+                        : Math.max(Math.min(minSize.width, parentWidth), Math.min(maxSize.width, parentWidth));
 
                 final int h = prefSize.height <= parentHeight
                         ? Math.max(prefSize.height, Math.min(minSize.height, parentHeight))
-                        : Math.max(minSize.height, Math.min(maxSize.height, parentHeight));
+                        : Math.max(Math.min(minSize.height, parentHeight), Math.min(maxSize.height, parentHeight));
 
                 onMeasure(container, w, h);
             }
