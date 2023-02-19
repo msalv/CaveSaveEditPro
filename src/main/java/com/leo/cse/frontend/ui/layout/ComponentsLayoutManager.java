@@ -14,19 +14,21 @@ import java.util.Map;
 import javax.swing.JComponent;
 
 public abstract class ComponentsLayoutManager implements LayoutManager2 {
-    private int measuredWidth;
-    private int measuredHeight;
-
-    private final Map<Component, LayoutConstraints> constraints = new HashMap<>();
-    private final Map<Component, Dimension> childrenDimensions = new HashMap<>();
-
-    private boolean isLayoutInvalid = true;
-
     private final static Dimension MIN_SIZE = new Dimension(0, 0);
     private final static Dimension MAX_SIZE = new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
     private final static Insets EMPTY_INSETS = new Insets(0,0,0,0);
     private final static LayoutConstraints EMPTY_CONSTRAINTS = new LayoutConstraints();
+
+    private int measuredWidth;
+    private int measuredHeight;
+    private final Dimension maxSize = new Dimension(MAX_SIZE);
+
+    private final Map<Component, LayoutConstraints> constraints = new HashMap<>();
+    private final Map<Component, Dimension> childrenDimensions = new HashMap<>();
+
+    private boolean isLayoutInvalid = true;
+    private boolean isMaxSizeChanged = false;
 
     private final ObjectPool<Dimension> dimensionsPool = new ObjectPool<>(() -> new Dimension(MIN_SIZE));
 
@@ -66,10 +68,23 @@ public abstract class ComponentsLayoutManager implements LayoutManager2 {
     public Dimension preferredLayoutSize(Container container) {
         Dimension size;
         synchronized(this) {
+            validateMaxSize(container);
             measureContainer(container);
             size = new Dimension(measuredWidth, measuredHeight);
         }
         return size;
+    }
+
+    private void validateMaxSize(Container container) {
+        final Dimension maxSize = container.isMaximumSizeSet()
+                ? container.getMaximumSize()
+                : this.maxSize;
+
+        if (!this.maxSize.equals(maxSize)) {
+            this.maxSize.setSize(maxSize);
+            isMaxSizeChanged = true;
+            isLayoutInvalid = true;
+        }
     }
 
     @Override
@@ -141,7 +156,9 @@ public abstract class ComponentsLayoutManager implements LayoutManager2 {
             if (parent == null || (parent.getWidth() == 0 && parent.getHeight() == 0)) {
                 onMeasure(container, prefSize.width, prefSize.height);
             } else if (parent.getWidth() != 0 && parent.getHeight() != 0 && container.getWidth() != 0 && container.getHeight() != 0) {
-                onMeasure(container, container.getWidth(), container.getHeight());
+                final int w = isMaxSizeChanged ? maxSize.width : container.getWidth();
+                final int h = isMaxSizeChanged ? maxSize.height : container.getHeight();
+                onMeasure(container, w, h);
             } else {
                 final Insets insets = (parent instanceof JComponent) ? parent.getInsets() : EMPTY_INSETS;
                 final int parentWidth = parent.getWidth() - (insets.left + insets.right);
@@ -201,6 +218,7 @@ public abstract class ComponentsLayoutManager implements LayoutManager2 {
         measuredWidth = width;
         measuredHeight = height;
         isLayoutInvalid = false;
+        isMaxSizeChanged = false;
     }
 
     @Override
