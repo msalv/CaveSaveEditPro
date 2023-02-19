@@ -930,7 +930,7 @@ public class GeneralPage extends JContainer implements
 
             if (refillHealthButton.isVisible()) {
                 lc = getChildConstraints(refillHealthButton);
-                size = measureChild(refillHealthButton, size.width - lc.getHorizontalMargins(), availTopPanelHeight - topPanelGroupHeight - lc.getVerticalMargins());
+                size = measureChild(refillHealthButton, size.width - lc.getHorizontalMargins(), availTopPanelHeight - topPanelGroupHeight);
             }
         }
 
@@ -949,7 +949,7 @@ public class GeneralPage extends JContainer implements
 
             if (snapButton.isVisible()) {
                 lc = getChildConstraints(snapButton);
-                size = measureChild(snapButton, size.width - lc.getHorizontalMargins(), availTopPanelHeight - topPanelGroupHeight - lc.getVerticalMargins());
+                size = measureChild(snapButton, size.width - lc.getHorizontalMargins(), availTopPanelHeight - topPanelGroupHeight);
             }
         }
 
@@ -959,7 +959,7 @@ public class GeneralPage extends JContainer implements
 
             if (savePointsButton.isVisible()) {
                 lc = getChildConstraints(savePointsButton);
-                size = measureChild(savePointsButton, size.width - lc.getHorizontalMargins(), availTopPanelHeight - topPanelGroupHeight - lc.getVerticalMargins());
+                size = measureChild(savePointsButton, size.width - lc.getHorizontalMargins(), availTopPanelHeight - topPanelGroupHeight);
             }
         }
 
