@@ -1,5 +1,6 @@
 package com.leo.cse.frontend.editor.pages;
 
+import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.alignBottom;
 import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.alignRight;
 import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.rightMargin;
 import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.topMargin;
@@ -90,12 +91,12 @@ public class InventoryPage extends VerticalLayout implements
     }
 
     private void initPage() {
-        initWeapons();
-        initItemsGrid();
-        initEquips();
+        add(initWeapons());
+        add(initEquips(), alignBottom(topMargin(10)));
+        add(initItemsGrid(), topMargin(10));
     }
 
-    private void initWeapons() {
+    private Component initWeapons() {
         final HorizontalSpreadLayout weaponsLayout = new HorizontalSpreadLayout();
         weaponsLayout.setMinimumSize(new Dimension(Integer.MAX_VALUE, 0));
         weaponsLayout.setGap(9);
@@ -119,10 +120,10 @@ public class InventoryPage extends VerticalLayout implements
             weaponsLayout.add(comp);
         }
 
-        add(weaponsLayout);
+        return weaponsLayout;
     }
 
-    private void initItemsGrid() {
+    private Component initItemsGrid() {
         final GridLayout grid = new GridLayout();
         grid.setSpanCount(5);
         grid.setHorizontalGap(5);
@@ -142,7 +143,7 @@ public class InventoryPage extends VerticalLayout implements
             grid.add(comp);
         }
 
-        add(grid, topMargin(10));
+        return grid;
     }
 
     private void showInventoryItemSelectionDialog(InventoryItem item, int position) {
@@ -150,8 +151,9 @@ public class InventoryPage extends VerticalLayout implements
                 .select();
     }
 
-    private void initEquips() {
+    private Component initEquips() {
         final HorizontalLayout layout = new HorizontalLayout();
+        layout.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
 
         layout.add(initWhimsicalStarCountField(), alignRight());
         layout.add(initMimCostumeField(), alignRight(rightMargin(9)));
@@ -159,7 +161,7 @@ public class InventoryPage extends VerticalLayout implements
 
         layout.add(initFlags());
 
-        add(layout, topMargin(10));
+        return layout;
     }
 
     private Component initFlags() {
