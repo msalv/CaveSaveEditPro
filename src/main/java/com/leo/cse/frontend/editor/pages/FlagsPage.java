@@ -78,6 +78,7 @@ public class FlagsPage extends JContainer implements ProfileStateChangeListener,
         scrollPane.setBorder(new LineBorder(ThemeData.getForegroundColor()));
         scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUI(new RetroScrollBarUI());
+        scrollPane.setViewportBorder(null);
 
         footer = createFooter();
 
