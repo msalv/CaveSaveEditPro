@@ -195,9 +195,6 @@ public class MapComponent extends JComponent {
     private void paintPlaceholder(Graphics g) {
         g.setColor(BG_COLOR);
         g.fillRect(0, 0, getWidth(), getHeight());
-//        g.setColor(Color.white);
-//        g.setFont(Resources.getFontPixelLarge());
-//        GraphicsHelper.drawTextCentered(g, "NO MOD LOADED!", getWidth() / 2, getHeight() / 2);
     }
 
     private void paintFocusedBorder(Graphics g) {
@@ -228,7 +225,8 @@ public class MapComponent extends JComponent {
         sg.setColor(BG_COLOR);
         sg.fillRect(0, 0, getWidth(), getHeight());
 
-        drawMapBackground(sg, resources, mapInfo, map);
+        drawMapBackground(sg, resources, mapInfo);
+
         sg.translate(-camX, -camY);
 
         final BufferedImage tileset = resources.getImage(mapInfo.getTilesetFile());
@@ -249,16 +247,16 @@ public class MapComponent extends JComponent {
             drawCharacter(sg, DRAW_TYPE_HOVER, playerHoverX, playerHoverY);
         }
 
-        if (isGridVisible) {
-            drawGrid(sg, map);
-        }
-
         sg.translate(camX, camY);
+
+        if (isGridVisible) {
+            drawGrid(sg);
+        }
 
         g.drawImage(surf, 0, 0, null);
     }
 
-    private void drawMapBackground(Graphics g, GameResources resources, MapInfo mapInfo, int[][][] map) {
+    private void drawMapBackground(Graphics g, GameResources resources, MapInfo mapInfo) {
         final int scrollType = mapInfo.getScrollType();
         if (scrollType == 3 || scrollType == 4) {
             return;
@@ -269,9 +267,12 @@ public class MapComponent extends JComponent {
         final int iw = bg.getWidth(null);
         final int ih = bg.getHeight(null);
 
-        for (int x = 0; x < map[0][0].length * 32; x += iw) {
-            for (int y = 0; y < map[0].length * 32; y += ih) {
-                g.drawImage(bg, x, y, iw, ih, null);
+        final int columns = (int)(getWidth() / (float)iw + 0.5f);
+        final int rows = (int)(getHeight() / (float)iw + 0.5f);
+
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++) {
+                g.drawImage(bg, x * iw, y * ih, iw, ih, null);
             }
         }
     }
@@ -279,17 +280,26 @@ public class MapComponent extends JComponent {
     private void drawMapTiles(Graphics g, GameResources resources, MapInfo mapInfo, int[][][] map, BufferedImage tileset, int line) {
         final int tilesetWidth = tileset.getWidth() / 32;
 
-        for (int yy = 0; yy < map[line].length; yy++) {
-            for (int xx = 0; xx < map[line][yy].length; xx++) {
-                final int xPixel = xx * 32 - 16;
-                final int yPixel = yy * 32 - 16;
+        final int left = (camX + 16) / 32;
+        final int top = (camY + 16) / 32;
+        final int right = left + (getWidth() + 32) / 32;
+        final int bottom = top + (getHeight() + 32) / 32;
 
-                final int tile = map[line][yy][xx];
+        for (int y = top; y < bottom; y++) {
+            for (int x = left; x < right; x++) {
+                if (y >= map[line].length || x >= map[line][y].length) {
+                    continue;
+                }
+
+                final int tile = map[line][y][x];
                 final int pxa = mapInfo.calcPxa(tile, resources);
                 if (pxa >= 0x20 && pxa <= 0x3F || pxa >= 0x81 && pxa <= 0xFF) {
                     // no draw
                     continue;
                 }
+
+                final int xPixel = x * 32 - 16;
+                final int yPixel = y * 32 - 16;
 
                 // draw normal tile
                 int sourceX = (tile % tilesetWidth) * 32;
@@ -331,6 +341,10 @@ public class MapComponent extends JComponent {
         if (iterator == null) {
             return;
         }
+
+        final int width = getWidth();
+        final int height = getHeight();
+
         while (iterator.hasNext()) {
             final MapInfo.PxeEntry e = iterator.next();
             final short flags = e.getFlags();
@@ -413,9 +427,12 @@ public class MapComponent extends JComponent {
                 int srcX2 = frameRect.width;
                 int srcY2 = frameRect.height;
                 final Rectangle dest = e.getDrawArea(tempRect);
-                int dstX = dest.x + offset.x;
-                int dstY = dest.y + offset.y;
-                g.drawImage(srcImg, dstX, dstY, dstX + dest.width, dstY + dest.height, srcX, srcY, srcX2, srcY2, null);
+                dest.x = dest.x + offset.x;
+                dest.y = dest.y + offset.y;
+
+                if (dest.intersects(camX, camY, width, height)) {
+                    g.drawImage(srcImg, dest.x, dest.y, dest.x + dest.width, dest.y + dest.height, srcX, srcY, srcX2, srcY2, null);
+                }
             }
         }
     }
@@ -426,7 +443,7 @@ public class MapComponent extends JComponent {
         drawCharacter(sg, DRAW_TYPE_NORMAL, x, y);
     }
 
-    private void drawCharacter(Graphics2D g, int drawType, short playerX, short playerY) {
+    private void drawCharacter(Graphics2D g, int drawType, int playerX, int playerY) {
         if (characterImageProvider == null) {
             return;
         }
@@ -455,21 +472,26 @@ public class MapComponent extends JComponent {
         g.setComposite(originalComposite);
     }
 
-    private void drawGrid(Graphics2D g, int[][][] map) {
+    private void drawGrid(Graphics2D g) {
         g.setColor(ThemeData.getForegroundColor());
 
         final Composite originalComposite = g.getComposite();
         g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 
-        final int width = map[0][0].length * 32;
-        final int height = map[0].length * 32;
+        final int width = getWidth();
+        final int height = getHeight();
 
-        for (int i = 0; i < map[0].length; i++) {
-            g.drawLine(0, i * 32 + 16, width, i * 32 + 16);
+        final int rows = height / 32;
+        final int columns = width / 32;
+
+        for (int i = 0; i <= rows; i++) {
+            final int y = i * 32 + 16 - (camY % 32);
+            g.drawLine(0, y, width, y);
         }
 
-        for (int j = 0; j < map[0][0].length; j++) {
-            g.drawLine(j * 32 + 16, 0, j * 32 + 16, height);
+        for (int j = 0; j <= columns; j++) {
+            final int x = j * 32 + 16 - (camX % 32);
+            g.drawLine(x, 0, x, height);
         }
 
         g.setComposite(originalComposite);
