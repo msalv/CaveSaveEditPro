@@ -7,13 +7,13 @@ import com.leo.cse.backend.CString;
 import com.leo.cse.backend.res.GameResourcesManager;
 import com.leo.cse.frontend.Config;
 import com.leo.cse.frontend.Resources;
+import com.leo.cse.frontend.editor.selectors.EncodingSelectionDialog;
 import com.leo.cse.frontend.ui.Gravity;
 import com.leo.cse.frontend.ui.ThemeData;
 import com.leo.cse.frontend.ui.components.compound.LabeledCheckBox;
 import com.leo.cse.frontend.ui.components.text.TextButton;
 import com.leo.cse.frontend.ui.components.text.TextLabel;
 import com.leo.cse.frontend.dialogs.ColorPickerDialog;
-import com.leo.cse.frontend.dialogs.InputDialog;
 import com.leo.cse.frontend.ui.layout.HorizontalLayout;
 import com.leo.cse.frontend.ui.layout.VerticalLayout;
 import com.leo.cse.util.StringUtils;
@@ -102,14 +102,14 @@ public class AppSettingsPage extends VerticalLayout {
 
         encodingButton.setOnClickListener(() -> {
             final String initial = Config.get(Config.KEY_ENCODING, CString.DEFAULT_ENCODING);
-            final InputDialog<String> dialog = new InputDialog<>(initial, "Input encoding");
-            dialog.selectString(this, (encoding) -> {
+            final String encoding = new EncodingSelectionDialog().select(initial);
+            if (encoding != null && !encoding.equals(initial)) {
                 if (StringUtils.isEncodingSupported(encoding)) {
                     Config.set(Config.KEY_ENCODING, encoding);
                     bind();
                     resourcesManager.reload();
                 }
-            });
+            }
         });
 
         encodingResetButton.setOnClickListener(() -> {
