@@ -33,7 +33,7 @@ public class LoadResourcesTask extends AsyncTask<GameResourcesLoadingPayload, Ga
     @Override
     protected GameResources doInBackground() throws Exception {
         final byte[] data = Files.readAllBytes(file.toPath());
-        final boolean shouldLoadNpcs = Config.getBoolean(Config.KEY_LOAD_NPCS, false);
+        final boolean shouldLoadNpcs = Config.getBoolean(Config.KEY_LOAD_NPCS, true);
         final String encoding = Config.get(Config.KEY_ENCODING, CString.DEFAULT_ENCODING);
 
         final GameResourcesLoader loader;

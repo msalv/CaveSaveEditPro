@@ -129,7 +129,7 @@ public class AppSettingsPage extends VerticalLayout {
     private void bind() {
         autoloadGameResCheckbox.setChecked(Config.getBoolean(Config.KEY_AUTOLOAD_EXE, false));
         autoloadRecentFileCheckbox.setChecked(Config.getBoolean(Config.KEY_AUTOLOAD_PROFILE, false));
-        loadNPCsCheckbox.setChecked(Config.getBoolean(Config.KEY_LOAD_NPCS, false));
+        loadNPCsCheckbox.setChecked(Config.getBoolean(Config.KEY_LOAD_NPCS, true));
 
         fgColorButton.setText(Config.getColorString(Config.KEY_FOREGROUND_COLOR, ThemeData.getForegroundColor()).toUpperCase(Locale.ROOT));
         bgColorButton.setText(Config.getColorString(Config.KEY_BACKGROUND_COLOR, ThemeData.getBackgroundColor()).toUpperCase(Locale.ROOT));

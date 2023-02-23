@@ -156,6 +156,6 @@ public class GameResourcesManager {
      * @return <code>true</code> if will be loaded, <code>false</code> otherwise.
      */
     public boolean shouldLoadNpc() {
-        return Config.getBoolean(Config.KEY_LOAD_NPCS, false);
+        return Config.getBoolean(Config.KEY_LOAD_NPCS, true);
     }
 }

@@ -816,7 +816,7 @@ public class GeneralPage extends JContainer implements
         miscInfoLabel.setText(String.format("Approx. %s seconds played", numberFormatter.format(frames / fps)));
 
         showGridCheckBox.setChecked(Config.getBoolean(Config.KEY_SHOW_MAP_GRID, false));
-        showAboveFgCheckBox.setChecked(Config.getBoolean(Config.KEY_SHOW_PLAYER_ABOVE_FG, false));
+        showAboveFgCheckBox.setChecked(Config.getBoolean(Config.KEY_SHOW_PLAYER_ABOVE_FG, true));
 
         mapView.setGridVisible(showGridCheckBox.isChecked());
         mapView.setDrawCharacterAboveForeground(showAboveFgCheckBox.isChecked());
