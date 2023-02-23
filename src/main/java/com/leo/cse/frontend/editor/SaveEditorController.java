@@ -131,7 +131,7 @@ public class SaveEditorController {
                 "Open profile",
                 new FileNameExtensionFilter(String.format("Profile Files (*.%s)", currentProfileExt), currentProfileExt),
                 dir,
-                false,
+                true,
                 false);
     }
 
@@ -215,7 +215,7 @@ public class SaveEditorController {
                     MOD_FILE_FILTERS,
                     type,
                     (base == null ? dir : base),
-                    false,
+                    true,
                     false);
             if (selected != null) {
                 base = selected;
