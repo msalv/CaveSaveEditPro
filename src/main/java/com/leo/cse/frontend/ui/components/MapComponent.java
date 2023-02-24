@@ -63,6 +63,7 @@ public class MapComponent extends JComponent {
     private boolean isDirectionRightToLeft = false;
 
     private final Rectangle tempRect = new Rectangle();
+    private final MapImageCache mapImageCache = new MapImageCache();
 
     public MapComponent(GameResourcesManager resourcesManager) {
         this.resourcesManager = resourcesManager;
@@ -166,6 +167,44 @@ public class MapComponent extends JComponent {
         }
     }
 
+    private boolean isCachedMapImageValid() {
+        if (!mapImageCache.hasImage() || mapImageCache.getImageWidth() != getWidth() || mapImageCache.getImageHeight() != getHeight()) {
+            return false;
+        }
+
+        return mapImageCache.isValid(currentMapId,
+                drawCharacterAboveForeground,
+                playerPosition[0],
+                playerPosition[1],
+                resolution,
+                slotId,
+                isDirectionRightToLeft,
+                camX,
+                camY,
+                isDragging,
+                playerHoverX,
+                playerHoverY);
+    }
+
+    public void invalidateCache() {
+        mapImageCache.invalidate();
+    }
+
+    private void cacheMapImageState() {
+        mapImageCache.set(currentMapId,
+                drawCharacterAboveForeground,
+                playerPosition[0],
+                playerPosition[1],
+                resolution,
+                slotId,
+                isDirectionRightToLeft,
+                camX,
+                camY,
+                isDragging,
+                playerHoverX,
+                playerHoverY);
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         if (!resourcesManager.hasResources()) {
@@ -218,42 +257,52 @@ public class MapComponent extends JComponent {
     }
 
     private void paintMap(Graphics g, MapInfo mapInfo, int[][][] map, Short[] playerPos) {
-        final GameResources resources = resourcesManager.getResources();
+        final Graphics2D sg = (Graphics2D) g;
 
-        final BufferedImage surf = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        final Graphics2D sg = (Graphics2D) surf.getGraphics();
-        sg.setColor(BG_COLOR);
-        sg.fillRect(0, 0, getWidth(), getHeight());
+        final BufferedImage cachedImage = mapImageCache.getImage(getWidth(), getHeight());
 
-        drawMapBackground(sg, resources, mapInfo);
-
-        sg.translate(-camX, -camY);
-
-        final BufferedImage tileset = resources.getImage(mapInfo.getTilesetFile());
-        drawMapTiles(sg, resources, mapInfo, map, tileset, MapInfo.LAYER_BG);
-
-        if (!drawCharacterAboveForeground) {
-            drawCharacter(sg, playerPos);
+        if (!isCachedMapImageValid()) {
+            final Graphics2D cg = (Graphics2D) cachedImage.getGraphics();
+            drawMap(cg, mapInfo, map, playerPos);
+            cacheMapImageState();
         }
 
-        drawMapEntities(sg, resources, mapInfo);
-        drawMapTiles(sg, resources, mapInfo, map, tileset, MapInfo.LAYER_FG);
-
-        if (drawCharacterAboveForeground) {
-            drawCharacter(sg, playerPos);
-        }
+        sg.drawImage(cachedImage, 0, 0, null);
 
         if (isHovered && !isDragging) {
-            drawCharacter(sg, DRAW_TYPE_HOVER, playerHoverX, playerHoverY);
+            drawCharacter(sg, DRAW_TYPE_HOVER, playerHoverX - camX, playerHoverY - camY);
         }
-
-        sg.translate(camX, camY);
 
         if (isGridVisible) {
             drawGrid(sg);
         }
+    }
 
-        g.drawImage(surf, 0, 0, null);
+    private void drawMap(Graphics2D g, MapInfo mapInfo, int[][][] map, Short[] playerPos) {
+        final GameResources resources = resourcesManager.getResources();
+
+        g.setColor(BG_COLOR);
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        drawMapBackground(g, resources, mapInfo);
+
+        g.translate(-camX, -camY);
+
+        final BufferedImage tileset = resources.getImage(mapInfo.getTilesetFile());
+        drawMapTiles(g, resources, mapInfo, map, tileset, MapInfo.LAYER_BG);
+
+        if (!drawCharacterAboveForeground) {
+            drawCharacter(g, playerPos);
+        }
+
+        drawMapEntities(g, resources, mapInfo);
+        drawMapTiles(g, resources, mapInfo, map, tileset, MapInfo.LAYER_FG);
+
+        if (drawCharacterAboveForeground) {
+            drawCharacter(g, playerPos);
+        }
+
+        g.translate(camX, camY);
     }
 
     private void drawMapBackground(Graphics g, GameResources resources, MapInfo mapInfo) {
@@ -672,6 +721,105 @@ public class MapComponent extends JComponent {
             if (playerPositionChangeListener != null) {
                 playerPositionChangeListener.onPlayerPositionChanged(pos[0], pos[1]);
             }
+        }
+    }
+
+    private static class MapImageCache {
+        private int mapId = -1;
+        private boolean shouldShowPlayerAboveFg = false;
+        private Short playerX = -1;
+        private Short playerY = -1;
+        private int resolution = -1;
+        private int slotId = -1;
+        private boolean isDirectionRightToLeft = false;
+        private int camX = -1;
+        private int camY = -1;
+        private boolean isDragging = false;
+        private int playerHoverX = -1;
+        private int playerHoverY = -1;
+
+        private BufferedImage cachedMapImage = null;
+        private boolean isValid = false;
+
+        boolean hasImage() {
+            return cachedMapImage != null;
+        }
+
+        int getImageWidth() {
+            return (cachedMapImage != null) ? cachedMapImage.getWidth() : -1;
+        }
+
+        int getImageHeight() {
+            return (cachedMapImage != null) ? cachedMapImage.getHeight() : -1;
+        }
+
+        private BufferedImage getImage(int width, int height) {
+            if (cachedMapImage == null || width != cachedMapImage.getWidth() || height != cachedMapImage.getHeight()) {
+                cachedMapImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            }
+            return cachedMapImage;
+        }
+
+        void invalidate() {
+            cachedMapImage = null;
+            isValid = false;
+        }
+
+        boolean isValid(int mapId,
+                boolean shouldShowPlayerAboveFg,
+                short playerX,
+                short playerY,
+                int resolution,
+                int slotId,
+                boolean isDirectionRightToLeft,
+                int camX,
+                int camY,
+                boolean isDragging,
+                int playerHoverX,
+                int playerHoverY) {
+            if (!isValid) {
+                return false;
+            }
+
+            return this.mapId == mapId
+                    && this.shouldShowPlayerAboveFg == shouldShowPlayerAboveFg
+                    && Objects.equals(this.playerX, playerX)
+                    && Objects.equals(this.playerY, playerY)
+                    && this.resolution == resolution
+                    && this.slotId == slotId
+                    && this.isDirectionRightToLeft == isDirectionRightToLeft
+                    && this.camX == camX
+                    && this.camY == camY
+                    && this.isDragging == isDragging
+                    && (!isDragging || (this.playerHoverX == playerHoverX && this.playerHoverY == playerHoverY));
+        }
+
+        void set(int mapId,
+                boolean shouldShowPlayerAboveFg,
+                Short playerX,
+                Short playerY,
+                int resolution,
+                int slotId,
+                boolean isDirectionRightToLeft,
+                int camX,
+                int camY,
+                boolean isDragging,
+                int playerHoverX,
+                int playerHoverY) {
+            this.mapId = mapId;
+            this.shouldShowPlayerAboveFg = shouldShowPlayerAboveFg;
+            this.playerX = playerX;
+            this.playerY = playerY;
+            this.resolution = resolution;
+            this.slotId = slotId;
+            this.isDirectionRightToLeft = isDirectionRightToLeft;
+            this.camX = camX;
+            this.camY = camY;
+            this.isDragging = isDragging;
+            this.playerHoverX = playerHoverX;
+            this.playerHoverY = playerHoverY;
+
+            isValid = true;
         }
     }
 }

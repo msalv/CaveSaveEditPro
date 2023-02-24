@@ -1157,6 +1157,7 @@ public class GeneralPage extends JContainer implements
     @Override
     public void onGameResourcesLoadingStateChanged(GameResourcesLoadingState state, Object payload) {
         if (state == GameResourcesLoadingState.DONE || state == GameResourcesLoadingState.NONE) {
+            mapView.invalidateCache();
             mapView.repaint();
             savePointsButton.setEnabled(resourcesManager.hasResources() && resourcesManager.shouldLoadNpc());
             initLocations();
