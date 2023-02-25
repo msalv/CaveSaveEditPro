@@ -253,6 +253,10 @@ public class SaveEditorPanel extends ValidateRootPanel implements
                 controller.saveProfileAs(this);
                 break;
 
+            case Ids.OPTION_FILE_CONVERT:
+                controller.convert(this);
+                break;
+
             case Ids.OPTION_SETTINGS:
                 controller.openSettings(parentFrame, this);
                 changeTheme();

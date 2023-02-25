@@ -325,6 +325,54 @@ public class SaveEditorController {
         );
     }
 
+    public void convert(Component parentComponent) {
+        if (!profileManager.hasProfile()) {
+            showNoProfileErrorMessage();
+            return;
+        }
+
+        final String currentProfileExt = Config.get(Config.KEY_LAST_PROFILE_EXT, "dat");
+        final File file = Dialogs.openFileChooser(
+                parentComponent,
+                "Convert profile",
+                new FileNameExtensionFilter("Profile Files", currentProfileExt),
+                new File(Config.get(Config.KEY_LAST_PROFILE, System.getProperty("user.dir"))),
+                false,
+                true);
+
+        if (file == null) {
+            return;
+        }
+
+        if (file.exists()) {
+            final int answer = JOptionPane.showConfirmDialog(
+                    parentComponent,
+                    "Are you sure you want to overwrite this file?",
+                    "Overwrite confirmation",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (answer != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+
+        try {
+            if (profileManager.convert(file)) {
+                Config.set(Config.KEY_LAST_PROFILE, file.getAbsolutePath());
+            }
+        } catch (Exception e) {
+            AppLogger.error("Failed to convert profile", e);
+            JOptionPane.showMessageDialog(
+                    null,
+                    "An error occurred while saving the profile file:\n" + e,
+                    "Could not save profile file",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
     public void launchGame() {
         new GameLauncher(resourcesManager).launch();
     }

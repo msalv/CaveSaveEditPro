@@ -1,5 +1,6 @@
 package com.leo.cse.backend.profile;
 
+import com.leo.cse.backend.profile.convert.ProfileConverterFactory;
 import com.leo.cse.util.async.IndeterminateTask;
 import com.leo.cse.log.AppLogger;
 import com.leo.cse.backend.profile.model.NormalProfile;
@@ -197,6 +198,23 @@ public class ProfileManager {
         } catch (Exception e) {
             AppLogger.error("Error while recovering backup!", e);
         }
+    }
+
+    public boolean convert(File file) throws ProfileFieldException {
+        final Profile profile = new ProfileConverterFactory()
+                .create(currentProfile)
+                .convert();
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(profile.getData());
+        } catch (Exception e) {
+            AppLogger.error("Error while converting profile!", e);
+            return false;
+        }
+
+        onProfileCreated(profile, file, null);
+
+        return true;
     }
 
     public boolean canUndo() {

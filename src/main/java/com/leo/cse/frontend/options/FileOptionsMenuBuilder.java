@@ -39,6 +39,12 @@ class FileOptionsMenuBuilder extends OptionsMenuItemsBuilder {
 
         options.add(new OptionsMenu.Option(Ids.OPTION_FILE_SAVE, Resources.getMenuIcon(Ids.ICON_MENU_SAVE), "Save", "Ctrl+S", profileManager.hasProfile()));
         options.add(new OptionsMenu.Option(Ids.OPTION_FILE_SAVE_AS, null, "Save As...", "Ctrl+Shift+S", profileManager.hasProfile()));
+
+        final String convertOptionTitle = profileManager.isCurrentProfilePlus()
+                ? "Convert to Cave Story File..."
+                : "Convert to Cave Story+ File...";
+        options.add(new OptionsMenu.Option(Ids.OPTION_FILE_CONVERT, null, convertOptionTitle, profileManager.hasProfile()));
+
         options.add(new OptionsMenu.Option(Ids.OPTION_SETTINGS, Resources.getMenuIcon(Ids.ICON_MENU_SETTINGS), "Settings"));
         options.add(new OptionsMenu.Option(Ids.OPTION_EXIT, null, "Exit", "Esc"));
 

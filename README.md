@@ -9,6 +9,7 @@ Improved and refactored fork of CaveSaveEdit by [@Leo40Story](https://github.com
 - new appearance
 - new Cave Story+ tab
 - supports game resources from various game editions and clones
+- Cave Story to Cave Story+ and vice versa converter 
 - bug fixes
 
 # How to Compile

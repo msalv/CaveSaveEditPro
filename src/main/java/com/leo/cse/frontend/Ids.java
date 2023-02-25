@@ -20,10 +20,11 @@ public class Ids {
     public final static int OPTION_SETTINGS = 9;
     public final static int OPTION_EXIT = 10;
     public final static int OPTION_FILE_NEW_PLUS = 11;
+    public final static int OPTION_FILE_CONVERT = 12;
 
     // --- Edit Menu Options --- //
-    public final static int OPTION_EDIT_UNDO = 12;
-    public final static int OPTION_EDIT_REDO = 13;
+    public final static int OPTION_EDIT_UNDO = 13;
+    public final static int OPTION_EDIT_REDO = 14;
 
     // --- Tools Menu Options --- //
     public final static int OPTION_TOOLS_290_REC = 15;
