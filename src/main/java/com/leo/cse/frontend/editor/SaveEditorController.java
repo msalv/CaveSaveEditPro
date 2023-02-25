@@ -147,7 +147,7 @@ public class SaveEditorController {
         }
 
         try {
-            profileManager.loadProfile(file, () -> {
+            profileManager.loadProfile(file, (profile) -> {
                 AppLogger.info(String.format("Loaded profile %s", profileManager.getCurrentFilePath()));
 
                 Config.set(Config.KEY_LAST_PROFILE, file.getAbsolutePath());

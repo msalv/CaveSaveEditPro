@@ -105,17 +105,10 @@ public class ProfileManager {
             this.currentProfile = new NormalProfile();
             this.mci = MCIFactory.createDefault();
         }
-        undoManager = new UndoManager();
-        isModified = false;
-        file = null;
-
-        callback.accept(currentProfile);
-
-        notifyListeners(ProfileStateEvent.LOADED);
-
+        onProfileCreated(currentProfile, null, callback);
     }
 
-    public void loadProfile(final File file, Runnable callback) {
+    public void loadProfile(final File file, Consumer<Profile> callback) {
         new IndeterminateTask<Profile>() {
             @Override
             protected Profile doInBackground() throws Exception {
@@ -126,18 +119,22 @@ public class ProfileManager {
 
             @Override
             protected void onPostExecute(Profile profile) {
-                currentProfile = profile;
-                undoManager = new UndoManager();
-                isModified = false;
-                ProfileManager.this.file = file;
-
-                if (callback != null) {
-                    callback.run();
-                }
-
-                notifyListeners(ProfileStateEvent.LOADED);
+                onProfileCreated(profile, file, callback);
             }
         }.execute();
+    }
+
+    private void onProfileCreated(Profile profile, File file, Consumer<Profile> callback) {
+        currentProfile = profile;
+        undoManager = new UndoManager();
+        isModified = false;
+        this.file = file;
+
+        if (callback != null) {
+            callback.accept(profile);
+        }
+
+        notifyListeners(ProfileStateEvent.LOADED);
     }
 
     public boolean saveCurrentProfile() throws IOException {

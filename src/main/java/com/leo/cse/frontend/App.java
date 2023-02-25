@@ -109,7 +109,7 @@ public class App {
                 final File file = new File(path);
                 if (file.exists()) {
                     try {
-                        profileManager.loadProfile(file, this::autoloadGameResources);
+                        profileManager.loadProfile(file, (profile) -> autoloadGameResources());
                     } catch (Exception e) {
                         AppLogger.error("Unable to autoload recent profile: " + file, e);
                     }
