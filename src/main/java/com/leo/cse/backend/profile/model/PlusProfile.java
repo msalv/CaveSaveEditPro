@@ -70,6 +70,8 @@ public class PlusProfile extends Profile {
         this(new byte[FILE_LENGTH]);
         BytesReaderWriter.writeString(data, ProfilePointers.HEADER_PTR, Profile.DEFAULT_HEADER);
         BytesReaderWriter.writeString(data, ProfilePointers.FLAGS_HEADER_PTR, Profile.DEFAULT_FLAGH);
+        setField(ProfileFields.FIELD_MUSIC_VOLUME, Profile.NO_INDEX, 8);
+        setField(ProfileFields.FIELD_SOUND_VOLUME, Profile.NO_INDEX, 10);
     }
 
     @Override

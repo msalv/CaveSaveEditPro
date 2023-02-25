@@ -75,8 +75,6 @@ public class PlusProfileManager {
 
             plusProfile.reset(startPoint);
             plusProfile.setField(ProfileFields.FIELD_MODIFY_DATE, Profile.NO_INDEX, timestamp);
-            plusProfile.setField(ProfileFields.FIELD_MUSIC_VOLUME, Profile.NO_INDEX, 8);
-            plusProfile.setField(ProfileFields.FIELD_SOUND_VOLUME, Profile.NO_INDEX, 10);
 
             plusProfile.setCurrentSlotId(currentSlotId);
         } catch (ProfileFieldException e) {
