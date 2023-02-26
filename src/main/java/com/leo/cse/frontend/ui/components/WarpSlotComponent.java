@@ -17,7 +17,6 @@ import com.leo.cse.frontend.ui.layout.VerticalLayout;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.util.function.Consumer;
 
 import javax.swing.border.EmptyBorder;

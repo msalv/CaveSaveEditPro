@@ -1,6 +1,5 @@
 package com.leo.cse.backend.res;
 
-import com.leo.cse.backend.CString;
 import com.leo.cse.util.FileUtils;
 import com.leo.cse.util.async.AsyncTaskCallback;
 import com.leo.cse.backend.exe.GameResourcesLoadingState;
