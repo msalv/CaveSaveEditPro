@@ -39,11 +39,6 @@ public class RadioButton extends JComponent implements CompoundButton, Hoverable
     }
 
     @Override
-    public void toggle() {
-        setChecked(!isChecked);
-    }
-
-    @Override
     public void setOnCheckedStateListener(OnCheckedStateChangedListener listener) {
         throw new UnsupportedOperationException();
     }

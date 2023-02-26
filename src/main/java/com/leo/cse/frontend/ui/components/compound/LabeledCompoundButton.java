@@ -71,11 +71,6 @@ abstract public class LabeledCompoundButton extends HorizontalLayout implements
     }
 
     @Override
-    public void toggle() {
-        setChecked(!isChecked);
-    }
-
-    @Override
     public void setEnabled(boolean enabled) {
         if (isEnabled() == enabled) {
             return;

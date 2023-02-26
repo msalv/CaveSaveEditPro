@@ -201,11 +201,6 @@ public class WeaponComponent extends VerticalLayout implements CompoundButton {
     }
 
     @Override
-    public void toggle() {
-        setChecked(!isChecked());
-    }
-
-    @Override
     public void setOnCheckedStateListener(OnCheckedStateChangedListener listener) {
         this.checkChangedListener = listener;
     }
