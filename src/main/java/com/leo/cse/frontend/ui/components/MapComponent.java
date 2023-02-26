@@ -1,12 +1,13 @@
 package com.leo.cse.frontend.ui.components;
 
 import com.leo.cse.backend.exe.MapInfo;
-import com.leo.cse.frontend.ui.ThemeData;
-import com.leo.cse.log.AppLogger;
+import com.leo.cse.backend.mci.EntityExtras;
 import com.leo.cse.backend.res.GameResources;
 import com.leo.cse.backend.res.GameResourcesManager;
 import com.leo.cse.frontend.Resources;
-import com.leo.cse.backend.mci.EntityExtras;
+import com.leo.cse.frontend.actions.GenericAction;
+import com.leo.cse.frontend.ui.ThemeData;
+import com.leo.cse.log.AppLogger;
 import com.leo.cse.util.GraphicsHelper;
 
 import java.awt.AlphaComposite;
@@ -18,8 +19,8 @@ import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -27,7 +28,10 @@ import java.awt.image.BufferedImage;
 import java.util.Iterator;
 import java.util.Objects;
 
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 public class MapComponent extends JComponent {
     private static final int DRAW_TYPE_NORMAL = 0;
@@ -71,8 +75,41 @@ public class MapComponent extends JComponent {
         final MouseEventsListener mouseEventsListener = new MouseEventsListener();
         addMouseListener(mouseEventsListener);
         addMouseMotionListener(mouseEventsListener);
-        addKeyListener(new KeyEventListener());
+        bindActions();
         setFocusable(true);
+    }
+
+    private void bindActions() {
+        final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        final ActionMap actionMap = getActionMap();
+
+        if (inputMap == null || actionMap == null) {
+            return;
+        }
+
+        final int[] keyCodes = { KeyEvent.VK_UP, KeyEvent.VK_DOWN, KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT };
+        final String[] names = { "Up", "Down", "Left", "Right" };
+        final int[] mods = { 0, KeyEvent.CTRL_DOWN_MASK, KeyEvent.SHIFT_DOWN_MASK, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK };
+
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < keyCodes.length; i++) {
+            for (int mod : mods) {
+                sb.setLength(0);
+                sb.append(names[i]);
+                if ((mod & KeyEvent.CTRL_DOWN_MASK) != 0) {
+                    sb.append("+Ctrl");
+                }
+                if ((mod & KeyEvent.SHIFT_DOWN_MASK) != 0) {
+                    sb.append("+Shift");
+                }
+                bindAction(inputMap, actionMap, new MapAction(sb.toString(), KeyStroke.getKeyStroke(keyCodes[i], mod)));
+            }
+        }
+    }
+
+    private void bindAction(InputMap inputMap, ActionMap actionMap, GenericAction action) {
+        inputMap.put(action.getKeyStroke(), action.getKey());
+        actionMap.put(action.getKey(), action);
     }
 
     public int getCameraX() {
@@ -661,13 +698,13 @@ public class MapComponent extends JComponent {
         }
     }
 
-    private class KeyEventListener extends KeyAdapter {
-        @Override
-        public void keyReleased(KeyEvent e) {
-            if (!resourcesManager.hasResources()) {
-                return;
-            }
+    private class MapAction extends GenericAction {
+        public MapAction(Object key, KeyStroke keyStroke) {
+            super(key, keyStroke);
+        }
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
             final GameResources resources = resourcesManager.getResources();
 
             final int[][][] map = resources.getMap(currentMapId, resourcesManager.shouldLoadNpc());
@@ -675,8 +712,8 @@ public class MapComponent extends JComponent {
                 return;
             }
 
-            final int code = e.getKeyCode();
-            final int mods = e.getModifiersEx();
+            final int code = getKeyStroke().getKeyCode();
+            final int mods = getKeyStroke().getModifiers();
             final boolean shiftDown = (mods & InputEvent.SHIFT_DOWN_MASK) != 0;
             final boolean ctrlDown = (mods & InputEvent.CTRL_DOWN_MASK) != 0;
 
@@ -721,6 +758,11 @@ public class MapComponent extends JComponent {
             if (playerPositionChangeListener != null) {
                 playerPositionChangeListener.onPlayerPositionChanged(pos[0], pos[1]);
             }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return resourcesManager.hasResources();
         }
     }
 
