@@ -51,5 +51,12 @@ If you’re having issues with the game text (e. g. map names), you can try to c
 This editor only works with vanilla profiles, meaning that any mod with custom profiles will **not** work.
 
 # Credits
+
+App icon designed by [Pancakes](https://vk.com/pancakes_art)
+<br/>UI icons by [Gofox](https://www.flaticon.com/authors/gofox)
+<br/>Arcadepix font by [Reekee of Dimenzioned](https://www.dafont.com/reekee-of-dimenzioned.d1065)
+<br/>NDS BIOS font by [Aaron D. Chand](https://www.dafont.com/aaron-d-chand.d6569)
+<br/>Based on Kapow's profile [specs](https://www.cavestory.org/guides/profile.txt)
+
 Honorable Mentions of the Original Version by [@Leo40Git](https://github.com/Leo40Git):  
 [Noxid](https://www.cavestory.org/forums/members/noxid.863) [@taedixon](https://github.com/taedixon), [gamemanj](https://www.cavestory.org/forums/members/gamemanj.7022) [@20kdc](https://github.com/20kdc), [zxin](https://www.cavestory.org/forums/members/zxin.7232) [@zxinmine](https://github.com/zxinmine), [Carrotlord](https://www.cavestory.org/forums/members/carrotlord.1111)
