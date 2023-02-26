@@ -76,7 +76,7 @@ public class InputDialog<T> {
         }
 
         try {
-            final Long value = (long)Math.abs(Long.parseLong(input.trim()));
+            final Long value = Math.abs(Long.parseLong(input.trim()));
             if (!Objects.equals(value, currentValue)) {
                 consumer.accept(value);
             }
