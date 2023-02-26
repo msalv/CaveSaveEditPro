@@ -3,7 +3,6 @@ package com.leo.cse.util;
 import com.leo.cse.frontend.ui.ThemeData;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;

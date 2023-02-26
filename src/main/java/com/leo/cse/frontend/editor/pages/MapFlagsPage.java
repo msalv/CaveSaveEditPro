@@ -1,6 +1,5 @@
 package com.leo.cse.frontend.editor.pages;
 
-import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.alignRight;
 import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.centerVertical;
 import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.constraints;
 import static com.leo.cse.frontend.ui.layout.constraints.ConstraintsUtils.leftMargin;

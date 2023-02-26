@@ -1,13 +1,11 @@
 package com.leo.cse.frontend.ui.layout;
 
 import com.leo.cse.frontend.ui.Gravity;
-import com.leo.cse.frontend.ui.ThemeData;
 import com.leo.cse.frontend.ui.layout.constraints.LayoutConstraints;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Insets;
 
 public class HorizontalLayout extends JContainer {

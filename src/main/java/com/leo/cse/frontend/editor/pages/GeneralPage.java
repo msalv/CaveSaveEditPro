@@ -16,7 +16,6 @@ import com.leo.cse.backend.res.GameResources;
 import com.leo.cse.backend.res.GameResourcesManager;
 import com.leo.cse.frontend.ui.components.RecentFileComponent;
 import com.leo.cse.log.AppLogger;
-import com.leo.cse.util.ColorUtils;
 import com.leo.cse.util.PlayerCharUtils;
 import com.leo.cse.frontend.Config;
 import com.leo.cse.frontend.Resources;
@@ -41,7 +40,6 @@ import com.leo.cse.frontend.ui.layout.constraints.LayoutConstraints;
 import com.leo.cse.util.ArrayUtils;
 import com.leo.cse.util.StringUtils;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;

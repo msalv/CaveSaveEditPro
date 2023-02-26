@@ -10,7 +10,6 @@ import com.leo.cse.backend.profile.fields.ByteField;
 import com.leo.cse.backend.profile.fields.FlagsField;
 import com.leo.cse.backend.profile.fields.IntegerArrayField;
 import com.leo.cse.backend.profile.fields.IntegerField;
-import com.leo.cse.backend.profile.fields.LongArrayField;
 import com.leo.cse.backend.profile.fields.LongField;
 import com.leo.cse.backend.profile.fields.MapAndPositionField;
 import com.leo.cse.backend.profile.fields.PositionField;
