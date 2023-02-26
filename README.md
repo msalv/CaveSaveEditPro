@@ -12,6 +12,19 @@ Improved and refactored fork of CaveSaveEdit by [@Leo40Story](https://github.com
 - Cave Story to Cave Story+ and vice versa converter 
 - bug fixes
 
+# How to Install
+
+There are two ways to install the application.
+
+1. Download installer for your platform
+    - Windows: [CaveSaveEditPro-v5.0.0-Installer-win.exe](https://github.com/msalv/CaveSaveEditPro/releases/download/v5.0.0/CaveSaveEditPro-v5.0.0-Installer-win.exe)
+    - macOS: [CaveSaveEditPro-v5.0.0-mac.dmg](https://github.com/msalv/CaveSaveEditPro/releases/download/v5.0.0/CaveSaveEditPro-v5.0.0-mac.dmg)
+
+2. Download JAR-file for any platfrom
+    - Make sure that [Java](https://www.java.com/en/download/) is installed using command line: `java --version`
+    - Download JAR-file: [CaveSaveEdit.jar](https://github.com/msalv/CaveSaveEditPro/releases/download/v5.0.0/CaveSaveEdit.jar)
+    - Run `java -jar CaveSaveEdit.jar` to launch the application
+
 # How to Compile
 
 1. Run `./gradlew jar` to build CaveSaveEdit.jar file.
