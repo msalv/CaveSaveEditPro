@@ -146,10 +146,6 @@ public class GameResourcesManager {
         return resources instanceof PlusGameResources;
     }
 
-    public String getEncoding() {
-        return Config.get(Config.KEY_ENCODING, CString.DEFAULT_ENCODING);
-    }
-
     /**
      * Checks if NPC files will be loaded.
      *
