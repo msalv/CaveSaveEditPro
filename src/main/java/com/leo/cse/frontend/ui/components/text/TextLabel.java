@@ -269,6 +269,7 @@ public class TextLabel extends JComponent {
         return measuredSize;
     }
 
+    @SuppressWarnings("unused")
     private static String printLayout(TextLayout layout) {
         final String s = layout.toString();
         final String t = "chars:\"";
