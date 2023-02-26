@@ -598,8 +598,6 @@ abstract public class GameResourcesLoader {
             final ByteBuffer pxaBuf = ByteBuffer.wrap(pxaArray);
             inChan.read(pxaBuf);
             BufferCompat.flip(pxaBuf);
-            //final byte[] pxaArray = pxaBuf.array();
-            //pxaMap.put(srcFile, pxaArray);
         } catch (Exception e) {
             AppLogger.error(String.format("Failed to load PXA:\n %s", srcFile), e);
         } finally {
