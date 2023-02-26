@@ -36,7 +36,7 @@ public class StartPoint {
      */
     public final short maxHealth;
 
-    public static StartPoint DEFAULT = new StartPoint(13, (short)10, (short)8, 2, (short)3, (short)3);
+    public static final StartPoint DEFAULT = new StartPoint(13, (short)10, (short)8, 2, (short)3, (short)3);
 
     public StartPoint(int map, short positionX, short positionY, int direction, short curHealth, short maxHealth) {
         this.map = map;
