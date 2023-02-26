@@ -77,8 +77,8 @@ public class AboutDialog extends RootDialog {
                 "Developed by @msalv"
         };
         private final static String[] CREDITS = {
-                "\nApp icon designed by $designer_name",
-                "https://behance.net/designer_name",
+                "\nApp icon designed by pancakes",
+                "https://vk.com/pancakes_art",
 
                 "\nUI icons by Gofox",
                 "https://www.flaticon.com/authors/gofox",
