@@ -13,9 +13,10 @@ Improved and refactored fork of CaveSaveEdit by [@Leo40Story](https://github.com
 - bug fixes
 
 # How to Compile
-Run `./gradlew jar` to build CaveSaveEdit.jar file.
-CaveSaveEdit.jar would compile to `./build/libs` directory.
-Run `java -jar CaveSaveEdit.jar` to launch the application.
+
+1. Run `./gradlew jar` to build CaveSaveEdit.jar file.
+2. CaveSaveEdit.jar would compile to `./build/libs` directory.
+3. Run `java -jar CaveSaveEdit.jar` to launch the application.
 
 # How to Use
 
@@ -23,8 +24,8 @@ Run `java -jar CaveSaveEdit.jar` to launch the application.
 Save game file is usually located in the same directory as your Cave Story executable file.   
 It is called ‘Profile.dat’
 
-If you have a Steam version of Cave Story+ installed then open Steam and go to your Library.   
-Right-click the game and select ‘Properties’ from the context menu.   
+If you have a Steam version of Cave Story+ installed then open Steam and go to your Library.<br/>
+Right-click the game and select ‘Properties’ from the context menu.<br/>
 In the ‘Properties’ window, go to the ‘Local Files’ tab and click ‘Browse Local Files’.
 
 To open a Profile.dat go to *File _→_ Open...* menu.
