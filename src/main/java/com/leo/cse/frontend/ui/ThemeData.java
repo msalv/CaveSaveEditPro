@@ -46,11 +46,6 @@ public class ThemeData {
         return foregroundColor;
     }
 
-    public static void setForegroundColor(Color foregroundColor) {
-        ThemeData.foregroundColor = foregroundColor;
-        Config.setColor(Config.KEY_FOREGROUND_COLOR, foregroundColor);
-    }
-
     public static Color getTextColor() {
         if (textColor == null) {
             textColor = Config.getColor(Config.KEY_TEXT_COLOR, COLOR_TEXT_DEFAULT);
