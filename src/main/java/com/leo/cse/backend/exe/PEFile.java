@@ -252,32 +252,6 @@ public class PEFile {
 					Integer.toHexString(rawData.length),
 					Integer.toHexString(characteristics));
 		}
-
-		// -- Copied from the old ExeSec, these routines appear reliable so let's not
-		// break anything --
-
-		private void shiftDirTable(ByteBuffer data, int amt, int pointer) {
-			// get the # of rsrc subdirs indexed by name
-			int nEntry = data.getShort(pointer + 12);
-			// get the # of rsrc subdirs indexed by id
-			nEntry += data.getShort(pointer + 14);
-
-			// read and shift entries
-			int pos = pointer + 16;
-			for (int i = 0; i < nEntry; i++) {
-				rsrcShift(data, amt, pos + i * 8);
-			}
-		}
-
-		private void rsrcShift(ByteBuffer data, int amt, int pointer) {
-			int rva = data.getInt(pointer + 4);
-			if ((rva & 0x80000000) != 0) { // if hi bit 1 points to another directory table
-				shiftDirTable(data, amt, rva & 0x7FFFFFFF);
-			} else {
-				int oldVal = data.getInt(rva);
-				data.putInt(rva, oldVal + amt);
-			}
-		}
 	}
 
 	public static int uCompare(int a) {
