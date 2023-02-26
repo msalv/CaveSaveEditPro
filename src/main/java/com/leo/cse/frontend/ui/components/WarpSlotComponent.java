@@ -80,10 +80,6 @@ public class WarpSlotComponent extends LabeledGroup {
         setContent(layout);
     }
 
-    public void setImage(Image image) {
-        this.image.setImage(image);
-    }
-
     public void setOnClickListener(Consumer<WarpSlot> clickListener) {
         title.setOnClickListener(() -> {
             clickListener.accept(warpSlot);
